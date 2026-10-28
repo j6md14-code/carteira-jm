@@ -1,7 +1,7 @@
 // Guarda a "casca" do app para abrir rápido e funcionar como app instalado.
 // Os dados nunca ficam aqui: eles vêm sempre do Supabase.
-const CACHE = "carteira-jm-v1";
-const ARQUIVOS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
+const CACHE = "carteira-jm-v8";
+const ARQUIVOS = ["./", "./index.html", "./manifest.webmanifest", "./logo-mark.png", "./logo-mark-pablo.png", "./favicon.png", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARQUIVOS)).then(() => self.skipWaiting()));
