@@ -172,7 +172,7 @@ dialog::backdrop{background:rgba(10,18,15,.5)}
 .hist li small{display:block;color:var(--muted);font-size:.74rem}
 .hist .add{display:flex;gap:6px}
 .hist .add input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px 10px}
-.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-weight:600;font-size:.9rem;z-index:50;max-width:calc(100vw - 32px)}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;font-weight:600;font-size:.9rem;z-index:50;max-width:min(420px,calc(100vw - 32px));text-align:center;line-height:1.35}
 .fab{position:fixed;right:max(18px,calc(env(safe-area-inset-right,0px) + 12px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:25;border-radius:99px;padding:13px 18px;box-shadow:var(--shadow)}
 .settings{display:flex;flex-direction:column;gap:12px}
 
@@ -581,20 +581,23 @@ function vImoveis(){
     const all=periodo; periodo="todos"; const m=metricas(i.id); periodo=all;
     const chip=i.status==="Vendido"?"won":i.status==="Pausado"?"lost":"stage";
     return'<article class="prop" data-edit-imovel="'+esc(i.id)+'"><div class="row"><span class="chip '+chip+'">'+esc(i.status||"Anunciando")+'</span>'+(i.exemplo?'<span class="chip ex">exemplo</span>':'')+'</div>'+
-    '<div class="price">'+brl0(i.valor)+'</div><div class="t">'+esc(i.titulo)+'</div><div class="sub">'+esc([i.tipo,i.bairro,i.quartos?i.quartos+" quartos":""].filter(Boolean).join(" · "))+'</div>'+
+    '<div class="price">'+brl0(i.valor)+(i.codigo?' <span class="chip">['+esc(i.codigo)+']</span>':'')+'</div><div class="t">'+esc(i.titulo)+'</div><div class="sub">'+esc([i.tipo,i.bairro,i.quartos?i.quartos+" quartos":""].filter(Boolean).join(" · "))+'</div>'+
     '<div class="stats"><span><b>'+brl0(m.gasto)+'</b>investido</span><span><b>'+m.nLeads+'</b>leads</span><span><b>'+m.vendas+'</b>vendas</span></div></article>'}).join("")+'</div>';
   return h;
 }
 
 function vGastos(){
   let h='<div class="row" style="margin-bottom:12px"><h2 class="sec" style="margin:0">Investimento em campanhas</h2><span class="spacer"></span>'+periodoSeg()+'</div>';
-  h+='<p class="sub" style="margin:0 0 14px">Lance o gasto e o número de leads do Gerenciador de Anúncios (coluna "Conversas iniciadas"). Pode ser por dia ou por semana.</p>';
+  const ms=state.config.metaSync;
+  const quando=ms?new Date(ms.em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+  h+='<div class="panel" style="margin:0 0 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap'+(ms&&!ms.ok?';border-color:var(--bad)':'')+'"><div style="flex:1;min-width:200px"><b>Meta Ads</b><div class="sub">'+(ms?(ms.ok?'Sincronizado em '+quando:'Falhou em '+quando)+(ms.mensagem?' · '+esc(ms.mensagem):''):'Ainda não conectado. Siga o PASSO-A-PASSO-META para os gastos entrarem sozinhos 3 vezes por dia.')+'</div></div><button class="btn primary" type="button" data-act="metaSync">Atualizar do Meta agora</button></div>';
+  h+='<p class="sub" style="margin:0 0 14px">Lançamentos com o selo <span class="chip stage">Meta</span> entram sozinhos. Para gastos fora do Meta (ex.: impulsionamento pago à parte), use "+ Lançar gasto".</p>';
   const gs=state.gastos.filter(g=>noPeriodo(g.data)).sort((a,b)=>(b.data||"").localeCompare(a.data||""));
   if(!state.gastos.length)return h+'<div class="empty"><b>Nenhum gasto lançado</b>Lance o valor gasto e os leads que chegaram para o CRM calcular o custo por lead de cada imóvel.<br><button class="btn primary" type="button" data-act="novoGasto">Lançar gasto</button></div>';
   if(!gs.length)return h+'<div class="empty"><b>Nenhum gasto neste período</b>Escolha "Tudo" para ver todos os lançamentos.</div>';
   const tot=gs.reduce((s,g)=>s+(Number(g.valor)||0),0), tl=gs.reduce((s,g)=>s+(Number(g.leads)||0),0);
   h+='<div class="tablewrap"><table><thead><tr><th>Data</th><th>Imóvel</th><th>Campanha / conjunto</th><th class="num">Gasto</th><th class="num">Leads</th><th class="num">Custo/lead</th></tr></thead><tbody>'+
-    gs.map(g=>{const c=Number(g.leads)?Number(g.valor)/Number(g.leads):NaN;return'<tr class="click" data-edit-gasto="'+esc(g.id)+'"><td>'+fmtData(g.data)+'</td><td>'+esc(imovelNome(g.imovelId))+(g.exemplo?' <span class="chip ex">exemplo</span>':'')+'</td><td>'+esc(g.campanha||"—")+'</td><td class="num">'+brl(g.valor)+'</td><td class="num">'+(Number(g.leads)||0)+'</td><td class="num">'+(isFinite(c)?brl(c):"—")+'</td></tr>'}).join("")+
+    gs.map(g=>{const c=Number(g.leads)?Number(g.valor)/Number(g.leads):NaN;return'<tr class="click" data-edit-gasto="'+esc(g.id)+'"><td>'+fmtData(g.data)+'</td><td>'+esc(imovelNome(g.imovelId))+(g.exemplo?' <span class="chip ex">exemplo</span>':'')+'</td><td>'+esc(g.campanha||"—")+(g.origem==="meta"?' <span class="chip stage">Meta</span>':'')+'</td><td class="num">'+brl(g.valor)+'</td><td class="num">'+(Number(g.leads)||0)+'</td><td class="num">'+(isFinite(c)?brl(c):"—")+'</td></tr>'}).join("")+
     '</tbody><tfoot><tr><td colspan="3">Total do período</td><td class="num">'+brl(tot)+'</td><td class="num">'+tl+'</td><td class="num">'+(tl?brl(tot/tl):"—")+'</td></tr></tfoot></table></div>';
   // por campanha
   const porCamp={}; gs.forEach(g=>{const k=g.campanha||"Sem nome";porCamp[k]=porCamp[k]||{v:0,l:0};porCamp[k].v+=Number(g.valor)||0;porCamp[k].l+=Number(g.leads)||0});
@@ -638,6 +641,15 @@ async function acao(a,btn){
   else if(a==="novoGasto")abrirGasto();
   else if(a==="fRetorno"){fRetorno=!fRetorno;render()}
   else if(a==="exportar")exportarCSV();
+  else if(a==="metaSync"){
+    btn.disabled=true; btn.textContent="Buscando no Meta…";
+    try{
+      const {data,error}=await sb.functions.invoke("meta-sync",{body:{dias:7}});
+      if(error){let msg=error.message||"erro";try{const j=await error.context.json();if(j&&j.erro)msg=j.erro}catch(e){}
+        toast(/not found|404|Failed to send/i.test(msg)?"A sincronização com o Meta ainda não foi instalada no Supabase.":"Não atualizou: "+msg)}
+      else{toast(data&&data.mensagem?data.mensagem:"Atualizado");await buscarTudo()}
+    }finally{if(btn.isConnected){btn.disabled=false;btn.textContent="Atualizar do Meta agora"}}
+  }
   else if(a==="backup")baixarBackup();
   else if(a==="sair"){await sb.auth.signOut();try{localStorage.removeItem(cacheKey())}catch(e){}}
   else if(a==="salvarMeta"){const v=Number($("#cfgMeta").value);if(v>0){await salvarConfig({metaVendas:v});toast("Meta salva: "+v+" vendas")}}
@@ -706,6 +718,8 @@ function abrirImovel(id){
   const i=id?state.imoveis.find(x=>x.id===id):null; const d=i?Object.assign({},i):{status:"Anunciando",tipo:"Apartamento"};
   const body=
     field("iTit","Nome do imóvel",inp("iTit",d.titulo,"text",'required placeholder="Ex.: Apto 2q Jardim Itapuã"'),true)+
+    field("iCodigo","Código nos anúncios do Meta",inp("iCodigo",d.codigo,"text",'placeholder="Ex.: ITAPUA" autocapitalize="characters"'),true)+
+    '<div class="f full"><span class="sub">Coloque o código entre colchetes no nome da campanha no Meta, ex.: <b style="color:var(--accent)">Teste criativo [ITAPUA]</b>. Assim o gasto importado cai neste imóvel.</span></div>'+
     field("iValor","Valor (R$)",inp("iValor",d.valor,"number",'min="0" step="1000" placeholder="280000"'))+
     field("iStatus","Status",'<select id="iStatus">'+opts(STATUS_IMOVEL,d.status)+'</select>')+
     field("iTipo","Tipo",'<select id="iTipo">'+opts(TIPOS,d.tipo)+'</select>')+
@@ -717,7 +731,7 @@ function abrirImovel(id){
   abrirDialogo(i?"Editar imóvel":"Novo imóvel",body,async()=>{
     const titulo=$("#iTit").value.trim(); if(!titulo){toast("Dê um nome ao imóvel");return false}
     await salvar("imoveis",Object.assign({},d,{titulo,valor:Number($("#iValor").value)||0,status:$("#iStatus").value,tipo:$("#iTipo").value,bairro:$("#iBairro").value.trim(),
-      quartos:$("#iQuartos").value,area:$("#iArea").value,link:$("#iLink").value.trim(),obs:$("#iObs").value.trim()}));
+      quartos:$("#iQuartos").value,area:$("#iArea").value,link:$("#iLink").value.trim(),obs:$("#iObs").value.trim(),codigo:$("#iCodigo").value.trim().toUpperCase().replace(/[\[\]\s]/g,"")}));
     toast(i?"Imóvel atualizado":"Imóvel cadastrado");
   }, i?()=>apagar("imoveis",i.id):null);
 }
@@ -727,7 +741,7 @@ function abrirGasto(id){
   const ult=[...state.gastos].sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0))[0]||{};
   const d=g?Object.assign({},g):{data:hoje(),imovelId:ult.imovelId||(state.imoveis[0]||{}).id||"",campanha:ult.campanha||""};
   const body=
-    field("gData","Data",inp("gData",d.data,"date"))+
+    (d.origem==="meta"?'<div class="f full banner" style="margin:0">Este lançamento veio do Meta. Se você editar, a próxima sincronização vai sobrescrever os valores.</div>':'')+field("gData","Data",inp("gData",d.data,"date"))+
     field("gImovel","Imóvel",'<select id="gImovel">'+opts(state.imoveis.map(i=>[i.id,i.titulo]),d.imovelId,"Sem imóvel")+'</select>')+
     field("gCamp","Campanha / conjunto / criativo",inp("gCamp",d.campanha,"text",'placeholder="Ex.: Teste criativo · C1 MCMV"'),true)+
     field("gValor","Valor gasto (R$)",inp("gValor",d.valor,"number",'min="0" step="0.01" placeholder="60,00" inputmode="decimal"'))+
