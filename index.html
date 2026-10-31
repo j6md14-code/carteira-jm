@@ -857,7 +857,7 @@ function vImoveis(){
     const cor=i.status==="Vendido"?"fechado":i.status==="Pausado"?"perdido":"qualificando";
     return'<button type="button" class="prop" data-edit-imovel="'+esc(i.id)+'"><div class="row"><span class="chip stage" data-etapa="'+cor+'">'+esc(i.status||"Anunciando")+'</span>'+(i.codigo?'<span class="chip">['+esc(i.codigo)+']</span>':'')+'</div>'+
     '<div class="price">'+brl0(i.valor)+'</div><div class="t">'+esc(i.titulo)+'</div><div class="sub">'+esc([i.tipo,i.bairro,i.quartos?i.quartos+" quartos":""].filter(Boolean).join(" · "))+'</div>'+
-    '<div class="stats"><span><b>'+brl0(m.gasto)+'</b>investido</span><span><b>'+m.nLeads+'</b>leads</span><span><b>'+m.vendas+'</b>vendas</span></div></button>'}).join("")+'</div>';
+    '<div class="stats"><span><b>'+brl(m.gasto)+'</b>investido</span><span><b>'+m.nLeads+'</b>leads</span><span><b>'+m.vendas+'</b>vendas</span></div></button>'}).join("")+'</div>';
   return h;
 }
 
