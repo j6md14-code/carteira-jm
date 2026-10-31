@@ -737,7 +737,7 @@ function vPainel(){
   const R=42,C=2*Math.PI*R;
   h+='<div class="hero"><div class="goal"><div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="'+R+'" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="9"/><circle cx="50" cy="50" r="'+R+'" fill="none" stroke="url(#gGoal)" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+(C*prog).toFixed(1)+' '+C.toFixed(1)+'"/><defs><linearGradient id="gGoal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F0CC84"/><stop offset="1" stop-color="#B98A3E"/></linearGradient></defs></svg><div class="in"><b>'+vendas30+'<span style="font-size:1rem;color:var(--muted)">/'+meta+'</span></b><span>vendas</span></div></div><div><div class="t">Meta dos 30 dias</div><div class="s">'+(vendas30>=meta?"Meta batida! 🎉":"Faltam "+(meta-vendas30)+" venda"+(meta-vendas30>1?"s":""))+'</div></div></div>';
   h+='<div class="kpis">'+
-    kpi("var(--accent)","money","Investido",brl0(m.gasto),m.leadsMeta+" leads do Meta")+
+    kpi("var(--accent)","money","Investido",brl(m.gasto),m.leadsMeta+" leads do Meta")+
     kpi("var(--teal)","target","Custo por lead",isFinite(m.cpl)?brl(m.cpl):"—","gasto ÷ leads do Meta")+
     kpi("var(--blue)","users","Leads no CRM",m.nLeads,m.quentes+(m.quentes===1?" quente ativo":" quentes ativos"))+
     kpi("var(--violet)","star","Qualificados",m.qualif,pct(m.qualif/m.nLeads)+" dos leads")+
@@ -786,7 +786,7 @@ function vPainel(){
   h+='<h2 class="sec">Desempenho por imóvel</h2>';
   if(!state.imoveis.length)h+='<div class="empty"><b>Nenhum imóvel cadastrado</b>Cadastre os imóveis anunciados para ver custo por lead e vendas de cada um.<br><button class="btn primary" type="button" data-act="novoImovel">Cadastrar imóvel</button></div>';
   else{
-    const rows=state.imoveis.map(i=>{const mi=metricas(i.id);return'<tr class="click" data-edit-imovel="'+esc(i.id)+'"><td>'+esc(i.titulo)+'</td><td class="num">'+brl0(i.valor)+'</td><td class="num">'+brl0(mi.gasto)+'</td><td class="num">'+mi.leadsMeta+'</td><td class="num">'+(isFinite(mi.cpl)?brl(mi.cpl):"—")+'</td><td class="num">'+mi.nLeads+'</td><td class="num">'+mi.qualif+'</td><td class="num">'+mi.visitas+'</td><td class="num">'+mi.vendas+'</td></tr>'}).join("");
+    const rows=state.imoveis.map(i=>{const mi=metricas(i.id);return'<tr class="click" data-edit-imovel="'+esc(i.id)+'"><td>'+esc(i.titulo)+'</td><td class="num">'+brl0(i.valor)+'</td><td class="num">'+brl(mi.gasto)+'</td><td class="num">'+mi.leadsMeta+'</td><td class="num">'+(isFinite(mi.cpl)?brl(mi.cpl):"—")+'</td><td class="num">'+mi.nLeads+'</td><td class="num">'+mi.qualif+'</td><td class="num">'+mi.visitas+'</td><td class="num">'+mi.vendas+'</td></tr>'}).join("");
     h+='<div class="tablewrap"><table><thead><tr><th>Imóvel</th><th class="num">Valor</th><th class="num">Gasto</th><th class="num">Leads Meta</th><th class="num">Custo/lead</th><th class="num">No CRM</th><th class="num">Qualif.</th><th class="num">Visitas</th><th class="num">Vendas</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   }
   return h;
