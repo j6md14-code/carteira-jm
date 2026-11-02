@@ -1287,16 +1287,30 @@ function abrirGasto(id){
   const g=id?state.gastos.find(x=>x.id===id):null;
   const ult=[...state.gastos].filter(x=>x.origem!=="meta").sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0))[0]||{};
   const d=g?Object.assign({},g):{data:hoje(),imovelId:ult.imovelId||(state.imoveis[0]||{}).id||"",campanha:ult.campanha||""};
-  const corpo='<div class="pane">'+(d.origem==="meta"?'<div class="banner full" style="margin:0">Este lançamento veio do Meta. Se você editar, a próxima sincronização vai sobrescrever.</div>':'')+
+  const corpo='<div class="pane">'+(d.origem==="meta"?'<div class="banner full" style="margin:0">A sincronização atualiza os dados da Meta e preserva os leads que você acrescentar manualmente.</div>':'')+
     F("gData","Data",I("gData",d.data,"date"))+F("gImovel","Imóvel",S("gImovel",state.imoveis.map(i=>[i.id,i.titulo]),d.imovelId,"Sem imóvel"))+
     F("gCamp","Campanha / anúncio",I("gCamp",d.campanha,"text",'placeholder="Ex.: Impulsionamento Instagram"'),true)+
-    F("gValor","Valor gasto (R$)",I("gValor",d.valor,"number",'inputmode="decimal" min="0" step="0.01"'))+F("gLeads","Leads que chegaram",I("gLeads",d.leads,"number",'inputmode="numeric" min="0"'))+
+    F("gValor","Valor gasto (R$)",I("gValor",d.valor,"number",'inputmode="decimal" min="0" step="0.01"'))+F("gLeads","Leads que chegaram",I("gLeads",d.leads,"number",'inputmode="numeric" min="0" step="1"'))+
     '<p class="hint full" id="gCpl" style="margin:0"></p>'+F("gObs","Observação",T("gObs",d.obs,""),true)+'</div>';
   abrirDialogo({titulo:g?"Editar lançamento":"Lançar gasto",corpo,onSave:async()=>{
-    await salvar("gastos",Object.assign({},d,{data:val("gData")||hoje(),imovelId:val("gImovel"),campanha:val("gCamp"),valor:Number(String(val("gValor")).replace(",","."))||0,leads:Number(val("gLeads"))||0,obs:val("gObs")}));
+    const leadsDigitados=Math.max(0,Math.floor(Number(val("gLeads"))||0));
+    let camposLeads={leads:leadsDigitados};
+
+    if(d.origem==="meta"){
+      const leadsMeta=Math.max(0,Math.floor(Number(d.leadsMeta ?? d.leads ?? 0)||0));
+      const leadsManual=Math.max(0,leadsDigitados-leadsMeta);
+
+      camposLeads={
+        leadsMeta,
+        leadsManual,
+        leads:leadsMeta+leadsManual
+      };
+    }
+
+    await salvar("gastos",Object.assign({},d,camposLeads,{data:val("gData")||hoje(),imovelId:val("gImovel"),campanha:val("gCamp"),valor:Number(String(val("gValor")).replace(",","."))||0,obs:val("gObs")}));
     toast(g?"Lançamento atualizado":"Gasto lançado");
   },onDelete:g?()=>apagar("gastos",g.id):null});
-  const upd=()=>{const v=Number(val("gValor"))||0,n=Number(val("gLeads"))||0;$("#gCpl").textContent=n?"Custo por lead: "+brl(v/n):""};
+  const upd=()=>{const v=Number(String(val("gValor")).replace(",","."))||0,n=Math.max(0,Math.floor(Number(val("gLeads"))||0));$("#gCpl").textContent=n?"Custo por lead: "+brl(v/n):""};
   $("#gValor").oninput=upd;$("#gLeads").oninput=upd;upd();
 }
 
