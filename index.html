@@ -464,7 +464,7 @@ const CADENCIAS={
 /* ---------- Estado ---------- */
 const state={leads:[],imoveis:[],gastos:[],vendas:[],config:{},scripts:null,ready:false};
 let vPeriodo="ano";
-let view="painel", periodo="30", fTemp="todos", fEtapa="ativos", fImovel="todos", fBusca="", fRetorno=false, fOrdem="quentes", scat="todos";
+let view="painel", periodo="30", periodoInicio="", periodoFim="", fTemp="todos", fEtapa="ativos", fImovel="todos", fBusca="", fRetorno=false; fOrdem="quentes", scat="todos";
 let sb=null, sessao=null, canal=null, entrouId=null;
 const eu=()=>CORRETOR;
 const LOGOS={"pablo rodrigues":"logo-mark-pablo.png"};
@@ -681,7 +681,17 @@ async function copiar(texto,el){
 }
 
 /* ---------- Métricas ---------- */
-function noPeriodo(dataStr){if(periodo==="todos")return true;if(!dataStr)return false;return diasDesde(dataStr)<Number(periodo)}
+function noPeriodo(dataStr){
+  if(periodo==="todos")return true;
+  if(!dataStr)return false;
+
+  if(periodo==="personalizado"){
+    const data=String(dataStr).slice(0,10);
+    return Boolean(periodoInicio&&periodoFim&&data>=periodoInicio&&data<=periodoFim);
+  }
+
+  return diasDesde(dataStr)<Number(periodo);
+}
 function metricas(imovelId){
   const gastos=state.gastos.filter(g=>noPeriodo(g.data)&&(!imovelId||g.imovelId===imovelId));
   const leads=state.leads.filter(l=>noPeriodo(l.entrada)&&(!imovelId||l.imovelId===imovelId));
@@ -712,7 +722,22 @@ function render(){
   bindView();
 }
 function periodoSeg(){
-  return '<div class="seg" role="group" aria-label="Período">'+[["7","7 dias"],["30","30 dias"],["todos","Tudo"]].map(p=>'<button type="button" data-periodo="'+p[0]+'" aria-pressed="'+(periodo===p[0])+'">'+p[1]+'</button>').join("")+'</div>';
+  return '<div class="row" style="gap:8px;align-items:flex-end;flex-wrap:wrap">'+
+    '<div class="seg" role="group" aria-label="Período">'+
+      [["7","7 dias"],["30","30 dias"],["todos","Tudo"]].map(p=>
+        '<button type="button" data-periodo="'+p[0]+'" aria-pressed="'+(periodo===p[0])+'">'+p[1]+'</button>'
+      ).join("")+
+    '</div>'+
+    '<div class="row" style="gap:6px;align-items:flex-end;flex-wrap:wrap">'+
+      '<label style="display:flex;flex-direction:column;gap:3px;font-size:.75rem;color:var(--muted)">De'+
+        '<input id="periodoInicio" type="date" value="'+esc(periodoInicio)+'" style="border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 8px;color:var(--ink)">'+
+      '</label>'+
+      '<label style="display:flex;flex-direction:column;gap:3px;font-size:.75rem;color:var(--muted)">Até'+
+        '<input id="periodoFim" type="date" value="'+esc(periodoFim)+'" style="border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 8px;color:var(--ink)">'+
+      '</label>'+
+      '<button type="button" class="btn sm'+(periodo==="personalizado"?" primary":"")+'" data-periodo-aplicar>Aplicar</button>'+
+    '</div>'+
+  '</div>';
 }
 function kpi(cor,ic,l,v,h){return'<div class="kpi" style="--c:'+cor+'"><div class="ic">'+ICON[ic]+'</div><div class="l">'+esc(l)+'</div><div class="v">'+esc(v)+'</div><div class="h">'+esc(h)+'</div></div>'}
 function liLead(l,sub,when,late,acao){
@@ -892,7 +917,31 @@ function vAjustes(){
 /* ---------- Eventos ---------- */
 function bindView(){
   const app=$("#app");
-  app.querySelectorAll("[data-periodo]").forEach(b=>b.onclick=()=>{periodo=b.dataset.periodo;render()});
+  app.querySelectorAll("[data-periodo]").forEach(b=>b.onclick=()=>{
+  periodo=b.dataset.periodo;
+  render();
+});
+
+app.querySelectorAll("[data-periodo-aplicar]").forEach(b=>b.onclick=()=>{
+  const inicio=$("#periodoInicio").value;
+  const fim=$("#periodoFim").value;
+
+  if(!inicio||!fim){
+    toast("Selecione a data inicial e a data final.");
+    return;
+  }
+
+  if(inicio>fim){
+    toast("A data inicial não pode ser posterior à data final.");
+    return;
+  }
+
+  periodoInicio=inicio;
+  periodoFim=fim;
+  periodo="personalizado";
+
+  render();
+});
   app.querySelectorAll("[data-open-lead]").forEach(b=>b.onclick=e=>{e.stopPropagation();abrirLead(b.dataset.openLead,b.dataset.tab)});
   app.querySelectorAll("[data-edit-imovel]").forEach(b=>b.onclick=()=>abrirImovel(b.dataset.editImovel));
   app.querySelectorAll("[data-edit-gasto]").forEach(b=>b.onclick=()=>abrirGasto(b.dataset.editGasto));
