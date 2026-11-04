@@ -464,7 +464,7 @@ const CADENCIAS={
 /* ---------- Estado ---------- */
 const state={leads:[],imoveis:[],gastos:[],vendas:[],config:{},scripts:null,ready:false};
 let vPeriodo="ano";
-let view="painel", periodo="30", periodoInicio="", periodoFim="", fTemp="todos", fEtapa="ativos", fImovel="todos", fBusca="", fRetorno=false, fOrdem="quentes", scat="todos";
+let view="painel", periodo="30", periodoInicio="", periodoFim="", fTemp="todos", fEtapa="ativos", fImovel="todos", fBusca="", fRetorno=false, fOrdem="quentes", fAnuncios="todos", scat="todos";
 let sb=null, sessao=null, canal=null, entrouId=null;
 const eu=()=>CORRETOR;
 const LOGOS={"pablo rodrigues":"logo-mark-pablo.png"};
@@ -886,21 +886,56 @@ function vImoveis(){
   return h;
 }
 
+
 function vGastos(){
-  let h='<div class="row" style="margin-bottom:12px"><h2 class="sec" style="margin:0">Investimento em campanhas</h2><span class="spacer"></span>'+periodoSeg()+'</div>';
+  let h='<div class="row" style="margin-bottom:12px"><h2 class="sec" style="margin:0">Investimento em campanhas</h2><span class="spacer"></span>'+periodoSeg()+
+    '<div class="row" style="gap:6px;align-items:center"><span class="sub">Anúncios:</span><div class="seg" role="group" aria-label="Filtrar anúncios">'+
+    '<button type="button" data-fanuncios="todos" aria-pressed="'+(fAnuncios==="todos")+'">Todos</button>'+
+    '<button type="button" data-fanuncios="ativos" aria-pressed="'+(fAnuncios==="ativos")+'">Ativos agora</button>'+
+    '</div></div></div>';
+
   const ms=state.config.metaSync;
   const qd=ms?new Date(ms.em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+  const temStatusAnuncios=Array.isArray(ms&&ms.anunciosAtivos);
+  const ativosMeta=temStatusAnuncios?ms.anunciosAtivos.map(String):[];
+
+  const idAnuncio=g=>{
+    const match=String(g.id||"").match(/^meta-(.+)-\d{4}-\d{2}-\d{2}$/);
+    return String(g.adId||(match&&match[1])||"");
+  };
+
   h+='<div class="panel" style="margin:0 0 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap'+(ms&&!ms.ok?';border-color:var(--bad)':'')+'"><div style="flex:1;min-width:200px"><b>Meta Ads</b><div class="sub">'+(ms?(ms.ok?'Sincronizado em '+qd:'Falhou em '+qd)+(ms.mensagem?' · '+esc(ms.mensagem):''):'Ainda não conectado.')+'</div></div><button class="btn primary" type="button" data-act="metaSync">Atualizar do Meta agora</button></div>';
-  const gs=state.gastos.filter(g=>noPeriodo(g.data)).sort((a,b)=>(b.data||"").localeCompare(a.data||""));
+
+  const gs=state.gastos.filter(g=>
+    noPeriodo(g.data)&&
+    (
+      fAnuncios==="todos"||
+      (g.origem==="meta"&&ativosMeta.includes(idAnuncio(g)))
+    )
+  ).sort((a,b)=>(b.data||"").localeCompare(a.data||""));
+
   if(!state.gastos.length)return h+'<div class="empty"><b>Nenhum gasto lançado</b>Os gastos do Meta entram sozinhos. Para outros gastos, use "+ Lançar gasto".<br><button class="btn primary" type="button" data-act="novoGasto">Lançar gasto</button></div>';
-  if(!gs.length)return h+'<div class="empty"><b>Nenhum gasto neste período</b>Escolha "Tudo" para ver todos os lançamentos.</div>';
+
+  if(!gs.length){
+    const titulo=fAnuncios==="ativos"?"Nenhum anúncio ativo encontrado":"Nenhum gasto neste período";
+    const mensagem=fAnuncios==="ativos"
+      ?(temStatusAnuncios?"A Meta não retornou lançamentos de anúncios ativos neste período.":"Clique em Atualizar do Meta agora para carregar os status atuais.")
+      :"Escolha Tudo para ver todos os lançamentos.";
+
+    return h+'<div class="empty"><b>'+titulo+'</b>'+mensagem+'</div>';
+  }
+
   const tot=gs.reduce((s,g)=>s+(Number(g.valor)||0),0), tl=gs.reduce((s,g)=>s+(Number(g.leads)||0),0);
+
   h+='<div class="tablewrap"><table><thead><tr><th>Data</th><th>Imóvel</th><th>Campanha / anúncio</th><th class="num">Gasto</th><th class="num">Leads</th><th class="num">Custo/lead</th></tr></thead><tbody>'+
     gs.map(g=>{const c=Number(g.leads)?Number(g.valor)/Number(g.leads):NaN;return'<tr class="click" data-edit-gasto="'+esc(g.id)+'"><td>'+fmtData(g.data)+'</td><td>'+esc(imovelNome(g.imovelId))+'</td><td>'+esc(g.campanha||"—")+(g.origem==="meta"?' <span class="chip stage" data-etapa="qualificando">Meta</span>':'')+'</td><td class="num">'+brl(g.valor)+'</td><td class="num">'+(Number(g.leads)||0)+'</td><td class="num">'+(isFinite(c)?brl(c):"—")+'</td></tr>'}).join("")+
     '</tbody><tfoot><tr><td colspan="3">Total do período</td><td class="num">'+brl(tot)+'</td><td class="num">'+tl+'</td><td class="num">'+(tl?brl(tot/tl):"—")+'</td></tr></tfoot></table></div>';
+
   const porCamp={}; gs.forEach(g=>{const k=g.campanha||"Sem nome";porCamp[k]=porCamp[k]||{v:0,l:0};porCamp[k].v+=Number(g.valor)||0;porCamp[k].l+=Number(g.leads)||0});
+
   h+='<h2 class="sec">Comparar campanhas e criativos</h2><div class="tablewrap"><table><thead><tr><th>Campanha / anúncio</th><th class="num">Gasto</th><th class="num">Leads</th><th class="num">Custo/lead</th></tr></thead><tbody>'+
     Object.entries(porCamp).sort((a,b)=>(a[1].l?a[1].v/a[1].l:1e9)-(b[1].l?b[1].v/b[1].l:1e9)).map(([k,o])=>'<tr><td>'+esc(k)+'</td><td class="num">'+brl(o.v)+'</td><td class="num">'+o.l+'</td><td class="num">'+(o.l?brl(o.v/o.l):"—")+'</td></tr>').join("")+'</tbody></table></div>';
+
   return h;
 }
 
@@ -918,30 +953,35 @@ function vAjustes(){
 function bindView(){
   const app=$("#app");
   app.querySelectorAll("[data-periodo]").forEach(b=>b.onclick=()=>{
-  periodo=b.dataset.periodo;
-  render();
-});
+    periodo=b.dataset.periodo;
+    render();
+  });
 
-app.querySelectorAll("[data-periodo-aplicar]").forEach(b=>b.onclick=()=>{
-  const inicio=$("#periodoInicio").value;
-  const fim=$("#periodoFim").value;
+  app.querySelectorAll("[data-periodo-aplicar]").forEach(b=>b.onclick=()=>{
+    const inicio=$("#periodoInicio").value;
+    const fim=$("#periodoFim").value;
 
-  if(!inicio||!fim){
-    toast("Selecione a data inicial e a data final.");
-    return;
-  }
+    if(!inicio||!fim){
+      toast("Selecione a data inicial e a data final.");
+      return;
+    }
 
-  if(inicio>fim){
-    toast("A data inicial não pode ser posterior à data final.");
-    return;
-  }
+    if(inicio>fim){
+      toast("A data inicial não pode ser posterior à data final.");
+      return;
+    }
 
-  periodoInicio=inicio;
-  periodoFim=fim;
-  periodo="personalizado";
+    periodoInicio=inicio;
+    periodoFim=fim;
+    periodo="personalizado";
 
-  render();
-});
+    render();
+  });
+
+  app.querySelectorAll("[data-fanuncios]").forEach(b=>b.onclick=()=>{
+    fAnuncios=b.dataset.fanuncios;
+    render();
+  });
   app.querySelectorAll("[data-open-lead]").forEach(b=>b.onclick=e=>{e.stopPropagation();abrirLead(b.dataset.openLead,b.dataset.tab)});
   app.querySelectorAll("[data-edit-imovel]").forEach(b=>b.onclick=()=>abrirImovel(b.dataset.editImovel));
   app.querySelectorAll("[data-edit-gasto]").forEach(b=>b.onclick=()=>abrirGasto(b.dataset.editGasto));
