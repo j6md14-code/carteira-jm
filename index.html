@@ -1025,15 +1025,8 @@ function vAjustes(){
     '<div class="panel"><h3>Scripts</h3><p class="sub" style="margin-top:0">Volta todos os scripts para o texto original. Os que você criou são apagados.</p><button class="btn danger" type="button" data-act="resetScripts">Restaurar scripts padrão</button></div>'+
     '<div class="panel"><h3>Conta</h3><p class="sub" style="margin-top:0">Conectado como <b style="color:var(--ink)">'+esc(eu())+'</b> (usuário: '+esc(usuarioDe(sessao&&sessao.user.email))+').'+(equipe.length>1?' Carteira compartilhada com: <b style="color:var(--ink)">'+esc([...new Set(equipe.map(r=>r.nome||"outro corretor"))].filter(n=>n!==eu()).join(", ")||"sua outra conta")+'</b>. Tudo o que um faz aparece para o outro.':' Só esta conta lê e altera seus dados.')+'</p><button class="btn" type="button" data-act="sair">Sair desta conta</button></div>'+
   '</div>';
-}{
-  const meta=Number(state.config.metaVendas)||4; const ult=state.config.ultimoBackup;
-  return'<h2 class="sec">Ajustes</h2><div class="settings">'+
-    '<div class="panel"><h3>Meta de vendas</h3><div class="row"><div class="f" style="flex:1;min-width:140px"><label for="cfgMeta">Vendas em 30 dias</label><input id="cfgMeta" type="number" inputmode="numeric" min="1" value="'+meta+'"></div><button class="btn primary" type="button" data-act="salvarMeta" style="align-self:flex-end">Salvar meta</button></div></div>'+
-    '<div class="panel"><h3>Backup</h3><p class="sub" style="margin-top:0">Baixe uma cópia completa (leads, imóveis, vendas, gastos e scripts) toda semana e guarde no Google Drive ou no e-mail.'+(ult?' Último backup: '+fmtData(ult)+'.':'')+'</p><div class="row"><button class="btn primary" type="button" data-act="backup">Baixar backup completo</button><label class="btn file-btn">Restaurar backup<input id="impFile" type="file" accept="application/json,.json"></label><button class="btn" type="button" data-act="exportar">Leads em planilha (CSV)</button></div></div>'+
-    '<div class="panel"><h3>Scripts</h3><p class="sub" style="margin-top:0">Volta todos os scripts para o texto original. Os que você criou são apagados.</p><button class="btn danger" type="button" data-act="resetScripts">Restaurar scripts padrão</button></div>'+
-    '<div class="panel"><h3>Conta</h3><p class="sub" style="margin-top:0">Conectado como <b style="color:var(--ink)">'+esc(eu())+'</b> (usuário: '+esc(usuarioDe(sessao&&sessao.user.email))+').'+(equipe.length>1?' Carteira compartilhada com: <b style="color:var(--ink)">'+esc([...new Set(equipe.map(r=>r.nome||"outro corretor"))].filter(n=>n!==eu()).join(", ")||"sua outra conta")+'</b>. Tudo o que um faz aparece para o outro.':' Só esta conta lê e altera seus dados.')+'</p><button class="btn" type="button" data-act="sair">Sair desta conta</button></div>'+
-  '</div>';
 }
+
 
 /* ---------- Eventos ---------- */
 function bindView(){
