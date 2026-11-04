@@ -927,8 +927,86 @@ function vGastos(){
 
   const tot=gs.reduce((s,g)=>s+(Number(g.valor)||0),0), tl=gs.reduce((s,g)=>s+(Number(g.leads)||0),0);
 
-  h+='<div class="tablewrap"><table><thead><tr><th>Data</th><th>Imóvel</th><th>Campanha / anúncio</th><th class="num">Gasto</th><th class="num">Leads</th><th class="num">Custo/lead</th></tr></thead><tbody>'+
-    gs.map(g=>{const c=Number(g.leads)?Number(g.valor)/Number(g.leads):NaN;return'<tr class="click" data-edit-gasto="'+esc(g.id)+'"><td>'+fmtData(g.data)+'</td><td>'+esc(imovelNome(g.imovelId))+'</td><td>'+esc(g.campanha||"—")+(g.origem==="meta"?' <span class="chip stage" data-etapa="qualificando">Meta</span>':'')+'</td><td class="num">'+brl(g.valor)+'</td><td class="num">'+(Number(g.leads)||0)+'</td><td class="num">'+(isFinite(c)?brl(c):"—")+'</td></tr>'}).join("")+
+  const gruposAnuncios=new Map();
+  const linhasTabela=[];
+
+  gs.forEach(g=>{
+    if(g.origem==="meta"){
+      const anuncioId=idAnuncio(g);
+      const chave=anuncioId?"meta:"+anuncioId:"meta:"+String(g.campanha||"Sem nome");
+      let grupo=gruposAnuncios.get(chave);
+
+      if(!grupo){
+        grupo={
+          campanha:g.campanha||"Sem nome",
+          imoveis:new Set(),
+          datas:[],
+          valor:0,
+          leads:0,
+          ultimaData:""
+        };
+        gruposAnuncios.set(chave,grupo);
+      }
+
+      if(g.imovelId)grupo.imoveis.add(g.imovelId);
+      if(g.data)grupo.datas.push(g.data);
+
+      grupo.valor+=Number(g.valor)||0;
+      grupo.leads+=Number(g.leads)||0;
+
+      if((g.data||"")>=grupo.ultimaData){
+        grupo.ultimaData=g.data||"";
+        if(g.campanha)grupo.campanha=g.campanha;
+      }
+    }else{
+      linhasTabela.push({
+        tipo:"manual",
+        g,
+        data:g.data||""
+      });
+    }
+  });
+
+  gruposAnuncios.forEach(grupo=>{
+    const datas=[...new Set(grupo.datas)].sort();
+
+    linhasTabela.push({
+      tipo:"meta",
+      grupo,
+      data:datas[datas.length-1]||"",
+      inicio:datas[0]||"",
+      fim:datas[datas.length-1]||""
+    });
+  });
+
+  linhasTabela.sort((a,b)=>(b.data||"").localeCompare(a.data||""));
+
+  const linhasHtml=linhasTabela.map(l=>{
+    if(l.tipo==="meta"){
+      const g=l.grupo;
+      const imoveis=[...g.imoveis];
+
+      const nomeImovel=imoveis.length===1
+        ?imovelNome(imoveis[0])
+        :(imoveis.length>1?"Vários imóveis":"Sem imóvel");
+
+      const periodoLinha=l.inicio===l.fim
+        ?fmtData(l.fim)
+        :fmtData(l.inicio)+" a "+fmtData(l.fim);
+
+      const c=g.leads?g.valor/g.leads:NaN;
+
+      return '<tr><td>'+periodoLinha+'</td><td>'+esc(nomeImovel)+'</td><td>'+esc(g.campanha||"—")+' <span class="chip stage" data-etapa="qualificando">Meta</span></td><td class="num">'+brl(g.valor)+'</td><td class="num">'+g.leads+'</td><td class="num">'+(isFinite(c)?brl(c):"—")+'</td></tr>';
+    }
+
+    const g=l.g;
+    const c=Number(g.leads)?Number(g.valor)/Number(g.leads):NaN;
+
+    return '<tr class="click" data-edit-gasto="'+esc(g.id)+'"><td>'+fmtData(g.data)+'</td><td>'+esc(imovelNome(g.imovelId))+'</td><td>'+esc(g.campanha||"—")+'</td><td class="num">'+brl(g.valor)+'</td><td class="num">'+(Number(g.leads)||0)+'</td><td class="num">'+(isFinite(c)?brl(c):"—")+'</td></tr>';
+  }).join("");
+
+  h+='<div class="tablewrap"><table><thead><tr><th>Data / período</th><th>Imóvel</th><th>Campanha / anúncio</th><th class="num">Gasto</th><th class="num">Leads</th><th class="num">Custo/lead</th></tr></thead><tbody>'+
+    linhasHtml+
     '</tbody><tfoot><tr><td colspan="3">Total do período</td><td class="num">'+brl(tot)+'</td><td class="num">'+tl+'</td><td class="num">'+(tl?brl(tot/tl):"—")+'</td></tr></tfoot></table></div>';
 
   const porCamp={}; gs.forEach(g=>{const k=g.campanha||"Sem nome";porCamp[k]=porCamp[k]||{v:0,l:0};porCamp[k].v+=Number(g.valor)||0;porCamp[k].l+=Number(g.leads)||0});
@@ -940,6 +1018,14 @@ function vGastos(){
 }
 
 function vAjustes(){
+  const meta=Number(state.config.metaVendas)||4; const ult=state.config.ultimoBackup;
+  return'<h2 class="sec">Ajustes</h2><div class="settings">'+
+    '<div class="panel"><h3>Meta de vendas</h3><div class="row"><div class="f" style="flex:1;min-width:140px"><label for="cfgMeta">Vendas em 30 dias</label><input id="cfgMeta" type="number" inputmode="numeric" min="1" value="'+meta+'"></div><button class="btn primary" type="button" data-act="salvarMeta" style="align-self:flex-end">Salvar meta</button></div></div>'+
+    '<div class="panel"><h3>Backup</h3><p class="sub" style="margin-top:0">Baixe uma cópia completa (leads, imóveis, vendas, gastos e scripts) toda semana e guarde no Google Drive ou no e-mail.'+(ult?' Último backup: '+fmtData(ult)+'.':'')+'</p><div class="row"><button class="btn primary" type="button" data-act="backup">Baixar backup completo</button><label class="btn file-btn">Restaurar backup<input id="impFile" type="file" accept="application/json,.json"></label><button class="btn" type="button" data-act="exportar">Leads em planilha (CSV)</button></div></div>'+
+    '<div class="panel"><h3>Scripts</h3><p class="sub" style="margin-top:0">Volta todos os scripts para o texto original. Os que você criou são apagados.</p><button class="btn danger" type="button" data-act="resetScripts">Restaurar scripts padrão</button></div>'+
+    '<div class="panel"><h3>Conta</h3><p class="sub" style="margin-top:0">Conectado como <b style="color:var(--ink)">'+esc(eu())+'</b> (usuário: '+esc(usuarioDe(sessao&&sessao.user.email))+').'+(equipe.length>1?' Carteira compartilhada com: <b style="color:var(--ink)">'+esc([...new Set(equipe.map(r=>r.nome||"outro corretor"))].filter(n=>n!==eu()).join(", ")||"sua outra conta")+'</b>. Tudo o que um faz aparece para o outro.':' Só esta conta lê e altera seus dados.')+'</p><button class="btn" type="button" data-act="sair">Sair desta conta</button></div>'+
+  '</div>';
+}{
   const meta=Number(state.config.metaVendas)||4; const ult=state.config.ultimoBackup;
   return'<h2 class="sec">Ajustes</h2><div class="settings">'+
     '<div class="panel"><h3>Meta de vendas</h3><div class="row"><div class="f" style="flex:1;min-width:140px"><label for="cfgMeta">Vendas em 30 dias</label><input id="cfgMeta" type="number" inputmode="numeric" min="1" value="'+meta+'"></div><button class="btn primary" type="button" data-act="salvarMeta" style="align-self:flex-end">Salvar meta</button></div></div>'+
