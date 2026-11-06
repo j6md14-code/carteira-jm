@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#FFFFFF">
+<meta name="theme-color" content="#0B0A09">
 <meta name="robots" content="noindex,nofollow">
 <meta name="format-detection" content="telephone=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,14 +20,14 @@
 <style>
 /* Mesa escura do corretor: latão como cor de marca; cada indicador com sua cor; temperatura e etapas com cores semânticas. */
 :root{
-  color-scheme:light;
-  --bg:#F4F5F7; --surface:#FFFFFF; --surface-2:#F7F8FA; --raised:#EEF1F5; --ink:#151A21; --muted:#667085; --line:#E3E6EB;
-  --accent:#A87522; --accent-ink:#FFFFFF; --accent-soft:#FBF3E3; --accent-line:#EAD5AE;
-  --primary:#151A21; --primary-ink:#FFFFFF;
-  --hot:#E0533D; --warm:#D9930F; --cold:#2F7BD8;
-  --teal:#0E9F8E; --violet:#7559E6; --blue:#2F7BD8; --orange:#E0702C; --green:#1E9E5A; --rose:#E0533D; --slate:#8A94A6;
-  --good:#1E9E5A; --bad:#D63B2F;
-  --shadow:0 1px 2px rgba(16,24,40,.05),0 4px 14px rgba(16,24,40,.06);
+  color-scheme:dark;
+  --bg:#0B0A09; --surface:#171513; --surface-2:#211D18; --raised:#2B251D; --ink:#F6F1E8; --muted:#B7AA97; --line:#40372B;
+  --accent:#E4B84E; --accent-ink:#17110A; --accent-soft:#302515; --accent-line:#735821;
+  --primary:#DDAF42; --primary-ink:#17110A;
+  --hot:#E97862; --warm:#E6B84F; --cold:#78A9E8;
+  --teal:#6DAE9C; --violet:#B39AE8; --blue:#78A9E8; --orange:#D99A55; --green:#57BD83; --rose:#E97862; --slate:#9D958A;
+  --good:#57BD83; --bad:#E97862;
+  --shadow:0 2px 8px rgba(0,0,0,.22),0 10px 28px rgba(0,0,0,.22);
   --font-display:"Fraunces","Iowan Old Style","Georgia",serif;
   --font-body:"Manrope",-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;
   --r:14px;
@@ -355,6 +355,175 @@ input[type="date"]::-webkit-date-and-time-value,input[type="datetime-local"]::-w
   .seg button{padding:8px 10px}
 }
 @media (prefers-reduced-motion:no-preference){.toast{animation:pop .2s ease-out}@keyframes pop{from{opacity:0;transform:translate(-50%,8px)}}}
+
+
+/* ---------- Identidade visual BLACK GOLD — apenas apresentação ---------- */
+html,body{background:var(--bg);color:var(--ink);color-scheme:dark}
+body{
+  background:
+    radial-gradient(900px 480px at 92% -8%,rgba(206,158,65,.16),transparent 62%),
+    radial-gradient(700px 420px at -12% 36%,rgba(112,78,34,.10),transparent 64%),
+    linear-gradient(145deg,#090807 0%,#100E0B 52%,#0A0908 100%);
+  color:var(--ink)
+}
+::selection{background:#DDAF42;color:#17110A}
+header.top{background:rgba(13,11,9,.94);border-bottom:1px solid rgba(221,175,66,.24);box-shadow:0 8px 28px rgba(0,0,0,.22)}
+.top .wrap{color:var(--ink)}
+.brand h1{color:#F8F3E9}
+.brand .role{color:#DDB64F}
+.brand .sync{background:rgba(221,175,66,.08);border-color:rgba(221,175,66,.28);color:#D9C79D}
+img.mono{box-shadow:0 2px 12px rgba(0,0,0,.3),0 0 0 1px rgba(221,175,66,.42)}
+.tab{color:#BDB3A4}
+.tab:hover{background:rgba(221,175,66,.08);color:#F5D783}
+.tab[aria-current="page"]{background:linear-gradient(135deg,#F0C95E,#C58C26);color:#17110A;box-shadow:0 4px 16px rgba(197,140,38,.22)}
+.top .gear{color:#D8C69E}
+
+.btn{background:linear-gradient(180deg,#211E19,#181613);border-color:#51432B;color:#F4EBDD;box-shadow:0 2px 8px rgba(0,0,0,.16)}
+.btn:hover{background:#2A241B;border-color:#A98235;color:#FFE4A1}
+.btn.primary,.btn.gold{
+  background:linear-gradient(180deg,#F2C95E 0%,#D9A83D 58%,#B98126 100%);
+  border-color:#E6B84E;color:#17110A;box-shadow:0 5px 16px rgba(193,139,37,.22)
+}
+.btn.primary:hover,.btn.gold:hover{background:linear-gradient(180deg,#F8D878,#DDAF42);color:#130E06}
+.btn.wa{background:#183126;border-color:#315A43;color:#83D7A1}
+.btn.danger{background:#2B1714;border-color:#8C4035;color:#FF9A88}
+.btn.danger.armed{background:#A63D30;color:#fff}
+.btn.ghost{color:#E4B84E}
+
+main{color:var(--ink)}
+h2.sec{color:#F0E7D8}
+.sub,.hint,.mini-empty{color:var(--muted)}
+.panel,.lead,.scard,.prop,.venda,.pessoa,.auth{
+  background:linear-gradient(155deg,rgba(34,30,24,.98),rgba(21,19,16,.98));
+  border-color:#403629;box-shadow:var(--shadow);color:var(--ink)
+}
+.panel>h3{color:#C9B995}
+.panel>h3 .count{background:#3A3020;color:#E7C76F}
+.banner{background:#2D2415;border-color:#765B28;color:#F3DFAF}
+.empty{background:#171411;border-color:#6E5425;color:#B7AA97}
+.empty b{color:#F4EBDD}
+.chip{background:#2A251D;color:#D5C7AE;border-color:#4B3C27}
+.chip.ex{background:#382A13;color:#F0C45D}
+.stage{background:color-mix(in srgb,var(--c) 18%,#1B1814);color:var(--c);border-color:color-mix(in srgb,var(--c) 48%,#33291C)}
+.score.alta{background:#173326;color:#7ED9A1}.score.media{background:#392C16;color:#F0C45D}.score.baixa{background:#2A2723;color:#C1B8AA}
+.kpi{background:linear-gradient(155deg,#242019,#171512);border-color:#4A3B25;box-shadow:var(--shadow)}
+.kpi::before{background:linear-gradient(90deg,#8F641F,#F0C85D,#A87522);opacity:1;height:3px}
+.kpi .ic{background:rgba(221,175,66,.12);color:#E7BD55}
+.kpi .l{color:#BDB09A}
+.kpi .v{color:#FFF8EA}
+.kpi .h{color:#B7AA97}
+.goal{background:linear-gradient(145deg,#1A1712,#090807);border-color:#7B5A22;box-shadow:0 12px 28px rgba(0,0,0,.28)}
+.goal .s{color:#F0C75D}
+.ring svg circle:first-child{stroke:rgba(255,255,255,.12)}
+.fstep .bar,.hb .bar,.scorebox .bar{background:#38332B}
+.fstep .bar i{background:linear-gradient(90deg,#B98227,#F1C85B)}
+.hb .bar i{background:linear-gradient(90deg,#9A6D25,#E5B84E)}
+.donut-wrap,.legend{color:#EDE3D3}
+
+.tablewrap{background:#171411;border-color:#493B28;box-shadow:var(--shadow)}
+table{color:#F0E8DB}
+th{background:#211D17;color:#CDBD9D;border-color:#403629}
+th,td{border-bottom-color:#393127}
+tbody tr.click:hover{background:#292319}
+tfoot td{background:#292116;border-top-color:#755A2A;color:#F0C65C}
+
+.filters input,.filters select,.lead .foot select{
+  background:#171512;border-color:#51432D;color:#F1E8D9
+}
+.filters input::placeholder,.f input::placeholder,.f textarea::placeholder{color:#897F70}
+.filters input:focus,.filters select:focus{border-color:#DDAF42;outline:none;box-shadow:0 0 0 3px rgba(221,175,66,.15)}
+.seg{background:#171411;border-color:#4B3B24}
+.seg button{color:#C6B99F}
+.seg button[aria-pressed="true"]{background:linear-gradient(135deg,#EFC65B,#BE8729);color:#17110A}
+.scats button{background:#1B1814;border-color:#4A3B26;color:#C8B99F}
+.scats button[aria-pressed="true"]{background:#DDAF42;border-color:#DDAF42;color:#17110A}
+
+.lead{border-left-color:#4B3B27}
+.lead .meta{color:#B9AC97}
+.lead .next{background:#211D17;border-color:#4A3B27;color:#E9DDC8}
+.lead .next b{color:#E6B84E}
+.lead .next.late{background:#321B17;border-color:#7F3F32}
+.lead .next.late b{color:#FF9A88}
+.temp{border-color:#4A3B27;background:#171411}
+.temp button{color:#C7BBA7}
+.temp button[data-t="quente"][aria-pressed="true"]{background:#A74436;color:#fff}
+.temp button[data-t="morno"][aria-pressed="true"]{background:#A57824;color:#fff}
+.temp button[data-t="frio"][aria-pressed="true"]{background:#315D91;color:#fff}
+.lead .foot select{background:#171512;color:#F1E8D9;border-color:#51432D}
+.scard .cat{color:#E0B44B}
+.scard p{color:#D5CABB}
+.prop .price{color:#F1C65A}
+.prop .stats{border-top-color:#443726;color:#BBAE98}
+.prop .stats b{color:#F5EBDD}
+
+.pessoa .rec{color:#79D39B}
+.pessoa .sm,.venda .m{color:#B7AA97}
+.parte{background:#211D17;border-color:#4B3B27;color:#E7D9C1}
+.parte button[aria-pressed="false"]{background:#3B2D15;color:#F0C45D}
+.parte button[aria-pressed="true"]{background:#183326;color:#82D7A0}
+.calc{background:#211D17;border-color:#4B3B27;color:#E9DDCB}
+
+/* Diálogos e formulários */
+dialog{background:#171411;border-color:#5A4728;color:#F4EBDD;box-shadow:0 24px 70px rgba(0,0,0,.6)}
+dialog::backdrop{background:rgba(0,0,0,.72)}
+.dlg header,.dlg footer,.dtabs{border-color:#403629;background:#191612}
+.dlg header h3{color:#F5EBDD}
+.dtabs button{background:#211D17;border-color:#4B3B27;color:#C9B99D}
+.dtabs button[aria-selected="true"]{background:#DDAF42;border-color:#DDAF42;color:#17110A}
+.dlg .body{background:#171411}
+.f label,.flabel{color:#C6B594}
+.f input,.f select,.f textarea,.addnote select,.addnote input,.sugg textarea{
+  background:#100F0D;border:1px solid #51432D;color:#F4EBDD;color-scheme:dark
+}
+.f input:focus,.f select:focus,.f textarea:focus,.addnote select:focus,.addnote input:focus,.sugg textarea:focus{border-color:#DDAF42;outline:none;box-shadow:0 0 0 3px rgba(221,175,66,.14)}
+.picks button,.tempPick button{background:#211D17;border-color:#55452C;color:#D1C4AE}
+.picks button[aria-pressed="true"]{background:#3A2D17;border-color:#A98235;color:#F0C65B}
+.tempPick button[data-t="quente"][aria-pressed="true"]{background:#A74436;border-color:#A74436;color:#fff}
+.tempPick button[data-t="morno"][aria-pressed="true"]{background:#A57824;border-color:#A57824;color:#fff}
+.tempPick button[data-t="frio"][aria-pressed="true"]{background:#315D91;border-color:#315D91;color:#fff}
+.scorebox,.cad{background:#211D17;border-color:#4A3B27;color:#E7DCC9}
+.scorebox .bar{background:#3A3329}
+.timeline li{background:#211D17;border-color:#4A3B27;color:#E7DCC9}
+.sugg{background:linear-gradient(150deg,#302515,#1A1712 70%);border-color:#765A27}
+.sugg .why{color:#C9B99D}
+.steps span{background:#393127;color:#C8BBA5}
+.steps span.done{background:#173326;color:#7ED9A1}
+.steps span.now{background:#DDAF42;color:#17110A}
+
+.auth h2{color:#F5EBDD}
+.auth p{color:#C4B69F}
+.auth .hint{color:#AFA18A}
+.toast{background:#E1B64B;color:#17110A;box-shadow:0 10px 30px rgba(0,0,0,.42)}
+.fab{background:linear-gradient(180deg,#F2C95E,#C58B2A);border-color:#E6B84E;color:#17110A;box-shadow:0 9px 28px rgba(0,0,0,.45),0 4px 16px rgba(193,139,37,.18)}
+.fab:hover{color:#17110A;background:linear-gradient(180deg,#F8D878,#DDAF42)}
+.file-btn{background:#211D17}
+
+/* Navegação mobile: barra inferior escura com seleção dourada */
+@media (max-width:760px){
+  header.top{background:rgba(12,10,8,.97);border-bottom:1px solid rgba(221,175,66,.24);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .top .wrap{background:transparent}
+  .brand h1{color:#F8F1E5}
+  .brand .role{color:#DDB64F}
+  nav.tabs{background:rgba(14,12,10,.98);border-top:1px solid #493A25;box-shadow:0 -8px 26px rgba(0,0,0,.35)}
+  .tab{color:#BFB29D}
+  .tab[aria-current="page"]{background:linear-gradient(145deg,#EAC15A,#B98025);color:#17110A;box-shadow:0 3px 12px rgba(193,139,37,.24)}
+  .top .gear{color:#DDB64F;background:#1B1711;border:1px solid #493A25}
+  .kpi{background:linear-gradient(155deg,#252018,#171411);border-color:#493A26}
+  .fab{background:linear-gradient(180deg,#F2C95E,#C58B2A);color:#17110A}
+  dialog{background:#171411}
+  .dlg footer{background:#191612}
+}
+@media (min-width:761px){
+  .top .wrap{padding-block:14px}
+  .brand{margin-right:18px}
+  nav.tabs{gap:5px}
+  .tab{padding:10px 13px}
+  main{padding-top:28px}
+  .hello{padding:20px 22px;border:1px solid rgba(221,175,66,.2);border-radius:18px;background:linear-gradient(110deg,rgba(32,26,17,.92),rgba(18,16,13,.72));box-shadow:var(--shadow)}
+  .hello h2{color:#F7EEDC}
+  .hello p{color:#BDAF98}
+}
+
 </style>
 </head>
 <body>
@@ -419,43 +588,42 @@ const TC=Object.fromEntries(TIPOS_CONTATO.map(t=>[t[0],t]));
 const CATS=[["abertura","Abertura"],["qualificacao","Qualificação"],["desejo","Criar desejo"],["agendamento","Agendamento"],["objecoes","Objeções"],["followup","Follow-up"],["reativacao","Reativação"],["posvisita","Pós-visita"]];
 const CAT_NOME=Object.fromEntries(CATS);
 const SCRIPTS_PADRAO=[
- {id:"ab-auto",cat:"abertura",titulo:"Boas-vindas automática",texto:"Oi! Aqui é o {corretor}, corretor responsável pelo imóvel do anúncio. 😊\nQue bom que você se interessou! Me dá só um instante que já te respondo pessoalmente com todos os detalhes."},
- {id:"ab-humana",cat:"abertura",titulo:"Abertura humana (até 5 min)",texto:"{nome}, tudo bem? 👋 Vi que você se interessou pelo {imovel}.\nPra eu te ajudar certinho: você está procurando pra *morar* ou pra *investir*?"},
- {id:"q-prazo",cat:"qualificacao",titulo:"Prazo",texto:"Você pretende se mudar pra quando, {nome}? Está mais pra agora ou ainda pesquisando com calma?"},
- {id:"q-pagamento",cat:"qualificacao",titulo:"Forma de pagamento",texto:"Você pensa em financiar ou seria à vista? Se for financiar, já fez alguma simulação ou tem aprovação?"},
- {id:"q-orcamento",cat:"qualificacao",titulo:"Orçamento",texto:"Qual faixa de parcela fica confortável pra você hoje? Assim eu já te mostro só o que realmente encaixa."},
- {id:"q-situacao",cat:"qualificacao",titulo:"Situação atual",texto:"Hoje você mora de aluguel, com a família, ou tem algum imóvel pra vender ou FGTS pra usar?"},
- {id:"q-decisor",cat:"qualificacao",titulo:"Quem decide",texto:"Além de você, mais alguém participa da decisão? Se quiser, já marco a visita num horário que dê pra todos."},
- {id:"d-fotos",cat:"desejo",titulo:"Fotos + benefício",texto:"Separei umas fotos pra você, {nome} 👀\nOlha esse espaço — é exatamente o que você comentou que procurava."},
- {id:"d-aluguel",cat:"desejo",titulo:"Parcela x aluguel",texto:"{nome}, fiz uma conta rápida: pelo Minha Casa Minha Vida a parcela desse imóvel fica bem perto do que muita gente paga de aluguel aqui em Rio Claro — só que construindo patrimônio. Quer que eu simule no seu caso?"},
- {id:"ag-visita",cat:"agendamento",titulo:"Agendar visita (2 opções)",texto:"{nome}, o jeito de você sentir se é o seu imóvel é vendo pessoalmente — foto não faz justiça.\nConsigo te levar lá *amanhã às 18h* ou *sábado de manhã*. Qual encaixa melhor?"},
- {id:"ag-leve",cat:"agendamento",titulo:"Reduzir compromisso",texto:"Sem compromisso nenhum, é só pra você conhecer. Se não for o ideal, já te mostro outras 2 opções na mesma faixa. Fechamos qual horário?"},
- {id:"ag-confirma",cat:"agendamento",titulo:"Confirmação da visita",texto:"Oi {nome}! Confirmando nossa visita {visita} no {imovel}. Te mando a localização 📍. Qualquer coisa me chama. Até lá!"},
- {id:"obj-caro",cat:"objecoes",titulo:"\"Tá caro\"",texto:"Entendo, {nome}. Me diz: caro em relação a quê? Considerando localização e tamanho, o valor do m² desse imóvel está abaixo do bairro. E dá pra ajustar entrada e parcela. Vamos ver na visita o que cabe no seu bolso?"},
- {id:"obj-pensar",cat:"objecoes",titulo:"\"Vou pensar\"",texto:"Perfeito, imóvel tem que ser pensado mesmo. Só pra eu te ajudar a pensar com a informação certa: o que ainda te deixa em dúvida — o valor, a localização ou o tamanho?"},
- {id:"obj-pesquisando",cat:"objecoes",titulo:"\"Só estou pesquisando\"",texto:"Ótimo, pesquisar é o certo. Justamente por isso vale conhecer 1 ou 2 pessoalmente — sua pesquisa fica com referência real. Te mostro esse sábado, sem compromisso?"},
- {id:"obj-corretor",cat:"objecoes",titulo:"\"Quero sem corretor\"",texto:"Entendo. Meu trabalho não te custa a mais — eu cuido da documentação, negociação e segurança jurídica, que é onde a maioria se complica. Posso te mostrar na visita como isso te protege?"},
- {id:"obj-credito",cat:"objecoes",titulo:"\"Crédito negado\"",texto:"Isso é mais comum do que parece e quase sempre tem solução. Trabalho com um correspondente bancário que faz a simulação de graça e acha o melhor caminho. Quer que eu peça a análise pra você hoje?"},
- {id:"obj-manda",cat:"objecoes",titulo:"\"Me manda tudo por aqui\"",texto:"Claro, já te mando as fotos e a ficha 👍 Mas o que decide de verdade é ver ao vivo — foto esconde o melhor. Te reservo amanhã às 18h ou sábado de manhã?"},
- {id:"obj-conjuge",cat:"objecoes",titulo:"\"Preciso ver com meu cônjuge\"",texto:"Faz todo sentido decidir juntos. Que tal marcarmos a visita num horário em que vocês dois possam ir? Sábado de manhã costuma ser bom pra casal."},
- {id:"fu-d0",cat:"followup",titulo:"D0 · mesmo dia",texto:"{nome}, te mandei os detalhes 👆 Qualquer dúvida é só chamar. Consigo te reservar uma visita amanhã ou sábado — qual fica melhor?"},
- {id:"fu-d1",cat:"followup",titulo:"D1 · ainda faz sentido?",texto:"Oi {nome}! Separei esse imóvel porque bateu com o que você procurava. As unidades melhores costumam sair rápido. Ainda faz sentido pra você?"},
- {id:"fu-d3",cat:"followup",titulo:"D3 · condição nova",texto:"{nome}, saiu uma condição de financiamento essa semana que pode melhorar sua parcela. Quer que eu simule pra você?"},
- {id:"fu-d5",cat:"followup",titulo:"D5 · prova social",texto:"Acabei de agendar 2 visitas pra esse imóvel. Antes de fechar com alguém, quis te dar a chance de conhecer primeiro. Topa sábado?"},
- {id:"fu-d7",cat:"followup",titulo:"D7 · alternativa",texto:"{nome}, se aquele não era exatamente o que você queria, tenho outras 2 opções na sua faixa. Te mando?"},
- {id:"fu-d14",cat:"followup",titulo:"D14 · reativação leve",texto:"Oi {nome}, tudo bem? Como está sua busca pelo imóvel? Apareceram oportunidades boas por aqui, quer dar uma olhada?"},
- {id:"re-visitou",cat:"reativacao",titulo:"Visitou e não fechou",texto:"Oi {nome}, tudo bem? Aqui é o {corretor}, que te mostrou o imóvel. Lembrei de você porque apareceu uma oportunidade com o perfil que você comentou. Quer que eu te mande as fotos?"},
- {id:"re-sumiu",cat:"reativacao",titulo:"Ainda procurando?",texto:"{nome}, tudo certo? Conversamos há um tempo sobre imóvel em Rio Claro. Você ainda está procurando ou já resolveu?"},
- {id:"re-credito",cat:"reativacao",titulo:"Crédito negado → MCMV",texto:"Oi {nome}! Tenho uma notícia boa: o Minha Casa Minha Vida mudou. Agora famílias com renda até 13 mil financiam imóvel de até 600 mil com juros menores que o banco. Muita gente que não conseguia antes, agora consegue. Quer que eu refaça sua simulação sem custo?"},
- {id:"re-opcoes",cat:"reativacao",titulo:"Novas opções na faixa",texto:"{nome}, separei 3 imóveis em Rio Claro na sua faixa que aceitam financiamento pelo Minha Casa Minha Vida. Quer que eu te mande? É só responder SIM."},
- {id:"re-valor",cat:"reativacao",titulo:"Conta parcela x aluguel",texto:"{nome}, fiz um comparativo rápido: em Rio Claro a parcela de um apto 2 quartos pelo MCMV fica perto de um aluguel. Quer ver a conta no seu caso?"},
- {id:"re-escassez",cat:"reativacao",titulo:"Escassez real",texto:"{nome}, aquele imóvel recebeu visitas essa semana. Se ainda tiver interesse, consigo encaixar você sábado."},
- {id:"re-despedida",cat:"reativacao",titulo:"Despedida",texto:"{nome}, não quero te incomodar, então essa é minha última mensagem. Se um dia voltar a procurar imóvel em Rio Claro, é só me chamar aqui. Abraço!"},
- {id:"pv-dia",cat:"posvisita",titulo:"Mesmo dia da visita",texto:"{nome}, obrigado pela visita hoje! O que mais te chamou atenção no imóvel? E teve algum ponto que te deixou em dúvida?"},
- {id:"pv-proposta",cat:"posvisita",titulo:"Proposta em até 24h",texto:"{nome}, preparei a simulação com as condições que conversamos: entrada, parcela e prazo. Posso te mandar agora e a gente revisa juntos?"},
- {id:"pv-d3",cat:"posvisita",titulo:"Dúvida que ficou",texto:"{nome}, ficou alguma dúvida sobre o {imovel}? Se quiser, consigo uma segunda visita pra você mostrar pra família."}
-];
-const CADENCIAS={
+ {id:"ab-auto",cat:"abertura",titulo:"Boas-vindas automática",texto:"Oi! Tudo bem? 😊 Aqui é o {corretor}, corretor responsável pelo atendimento desse imóvel. Recebi seu contato e vou te ajudar com as informações por aqui."},
+ {id:"ab-humana",cat:"abertura",titulo:"Abertura humana (até 5 min)",texto:"Oi, {nome}! Tudo bem? Vi que você se interessou pelo {imovel} e vim te atender pessoalmente. Me conta: você está procurando um imóvel para morar ou para investir?"},
+ {id:"q-prazo",cat:"qualificacao",titulo:"Prazo",texto:"Entendi! E você pensa em mudar logo ou está pesquisando com mais calma, sem uma data definida ainda?"},
+ {id:"q-pagamento",cat:"qualificacao",titulo:"Forma de pagamento",texto:"E sobre a compra, você imagina fazer por financiamento ou pretende comprar à vista?"},
+ {id:"q-orcamento",cat:"qualificacao",titulo:"Orçamento",texto:"Para eu não te mostrar algo fora do que você procura, existe uma faixa de parcela que seria confortável para você hoje?"},
+ {id:"q-situacao",cat:"qualificacao",titulo:"Situação atual",texto:"Hoje você mora de aluguel ou já tem um imóvel próprio? Pergunto só para entender melhor o momento da sua mudança."},
+ {id:"q-decisor",cat:"qualificacao",titulo:"Quem decide",texto:"Você costuma decidir a compra sozinho ou tem alguém da família que participa dessa escolha com você?"},
+ {id:"d-fotos",cat:"desejo",titulo:"Fotos + benefício",texto:"Separei algumas fotos do {imovel} para você conseguir visualizar melhor os ambientes. Depois de olhar, me conta: qual detalhe mais chamou sua atenção?"},
+ {id:"d-aluguel",cat:"desejo",titulo:"Parcela x aluguel",texto:"Uma coisa que costuma ajudar nessa decisão é comparar o planejamento de uma parcela com o valor que a pessoa já paga de aluguel. Isso depende da entrada, da renda e da análise do banco. Você já chegou a fazer alguma simulação?"},
+ {id:"ag-visita",cat:"agendamento",titulo:"Agendar visita (2 opções)",texto:"Acho que conhecer pessoalmente pode te ajudar a sentir melhor o espaço e os detalhes do {imovel}. Para eu organizar isso, você prefere visitar durante a semana ou no sábado?"},
+ {id:"ag-leve",cat:"agendamento",titulo:"Reduzir compromisso",texto:"A visita é só para conhecer, tirar dúvidas e ver se o imóvel combina com o que você procura. Não existe compromisso de fechar. Faz sentido para você conhecer pessoalmente?"},
+ {id:"ag-confirma",cat:"agendamento",titulo:"Confirmação da visita",texto:"Oi, {nome}! Tudo certo para nossa visita {visita} no {imovel}? Vou deixar tudo organizado e te envio a localização por aqui. Se surgir algum imprevisto, é só me avisar. 😊"},
+ {id:"obj-caro",cat:"objecoes",titulo:"\"Tá caro\"",texto:"Entendo, {nome}. É importante que o valor faça sentido para você. Quando você diz que ficou acima do esperado, o que pesou mais: o valor total do imóvel ou a parcela que teria que assumir?"},
+ {id:"obj-pensar",cat:"objecoes",titulo:"\"Vou pensar\"",texto:"Claro! É uma decisão importante e você precisa ficar seguro. Para eu conseguir te ajudar sem pressionar, o que você gostaria de avaliar com mais calma?"},
+ {id:"obj-pesquisando",cat:"objecoes",titulo:"\"Só estou pesquisando\"",texto:"Tranquilo, {nome}! Pesquisar com calma faz parte. Para eu te mandar opções que realmente tenham a ver com você, o que é indispensável no imóvel que procura?"},
+ {id:"obj-corretor",cat:"objecoes",titulo:"\"Quero sem corretor\"",texto:"Tudo bem, {nome}. Posso te passar as informações objetivas do imóvel e deixar você à vontade para avaliar. Qual informação você gostaria de conferir primeiro?"},
+ {id:"obj-credito",cat:"objecoes",titulo:"\"Crédito negado\"",texto:"Poxa, entendo. Uma negativa pode desanimar, mas cada situação precisa ser analisada com cuidado e não dá para prometer aprovação. Você chegou a receber do banco o motivo da negativa?"},
+ {id:"obj-manda",cat:"objecoes",titulo:"\"Me manda tudo por aqui\"",texto:"Claro! Te envio as informações por aqui, sim. Para começar pelo que é mais útil para você, prefere receber fotos, vídeo ou os detalhes de valores e condições?"},
+ {id:"obj-conjuge",cat:"objecoes",titulo:"\"Preciso ver com meu cônjuge\"",texto:"Com certeza, {nome}. É importante que vocês dois fiquem confortáveis com a escolha. Posso organizar um resumo com fotos, valores e informações principais para avaliarem juntos. Quer que eu prepare?"},
+ {id:"fu-d0",cat:"followup",titulo:"D0 · mesmo dia",texto:"Oi, {nome}! Conseguiu dar uma olhada no material que te mandei? Fiquei curioso para saber o que você achou do imóvel. 😊"},
+ {id:"fu-d1",cat:"followup",titulo:"D1 · ainda faz sentido?",texto:"Oi, {nome}! Passando para saber se conseguiu ver as informações do imóvel. Ficou alguma dúvida que eu possa esclarecer?"},
+ {id:"fu-d3",cat:"followup",titulo:"D3 · ajuda na busca",texto:"Oi, {nome}! Pensei em uma forma de facilitar sua busca: posso filtrar as opções pelo que você me contou. O que está sendo mais importante para você neste momento?"},
+ {id:"fu-d5",cat:"followup",titulo:"D5 · como prefere seguir?",texto:"Oi, {nome}! Sei que a rotina é corrida, então fique à vontade para responder quando puder. Você prefere que eu continue separando opções ou que eu retome o contato mais adiante?"},
+ {id:"fu-d7",cat:"followup",titulo:"D7 · outra alternativa",texto:"Oi, {nome}! Se aquele imóvel não encaixou completamente, posso procurar algo mais próximo do que você imaginou. O que você gostaria que fosse diferente nele?"},
+ {id:"fu-d14",cat:"followup",titulo:"D14 · retomada leve",texto:"Oi, {nome}! Tudo bem? Passando para saber como ficou sua busca por imóvel. Você continua procurando ou seus planos mudaram? Sem problema se tiver mudado."},
+ {id:"re-visitou",cat:"reativacao",titulo:"Visitou e não fechou",texto:"Oi, {nome}! Tudo bem? Lembrei da nossa visita e do que conversamos sobre o imóvel. Queria entender melhor: o que faltou para ele fazer sentido para você?"},
+ {id:"re-sumiu",cat:"reativacao",titulo:"Ainda procurando?",texto:"Oi, {nome}! Faz um tempinho que conversamos sobre sua busca por imóvel e resolvi retomar o contato. Você ainda está procurando ou preferiu deixar isso para outro momento?"},
+ {id:"re-credito",cat:"reativacao",titulo:"Crédito negado: entender possibilidades",texto:"Oi, {nome}! Lembrei que você tinha comentado sobre a dificuldade na análise de crédito. Se isso ainda for uma questão, podemos entender o que o banco informou e avaliar possíveis caminhos, sem garantia de aprovação. Você recebeu o motivo da negativa?"},
+ {id:"re-opcoes",cat:"reativacao",titulo:"Novas opções na faixa",texto:"Oi, {nome}! Posso procurar outras opções mais alinhadas ao que você tinha me contado. Pensando no imóvel que vimos antes, o que você gostaria de mudar na próxima opção?"},
+ {id:"re-valor",cat:"reativacao",titulo:"Conversa sobre valor e parcela",texto:"Oi, {nome}! Da última vez conversamos sobre valores e condições. Para eu filtrar opções que caibam melhor no seu planejamento, qual faixa de parcela seria confortável para você hoje?"},
+ {id:"re-escassez",cat:"reativacao",titulo:"Retomar interesse sem pressão",texto:"Oi, {nome}! Passando para saber se você ainda tem interesse em imóveis com esse perfil. Se aquele já não fizer sentido, tudo bem. Quer que eu continue procurando alternativas para você?"},
+ {id:"re-despedida",cat:"reativacao",titulo:"Pausar contato com respeito",texto:"Oi, {nome}! Não quero ficar te mandando mensagens sem saber se sua busca continua. Vou pausar o contato por aqui para não te incomodar. Quando quiser retomar ou precisar de alguma informação, pode me chamar. Um abraço!"},
+ {id:"pv-dia",cat:"posvisita",titulo:"Mesmo dia da visita",texto:"{nome}, obrigado por reservar um tempo para conhecer o imóvel hoje! Queria saber sua primeira impressão: o que mais gostou nele?"},
+ {id:"pv-proposta",cat:"posvisita",titulo:"Resumo das condições",texto:"{nome}, organizei os pontos que conversamos sobre o imóvel, incluindo valores e condições. Posso te mandar um resumo para você conferir com calma?"},
+ {id:"pv-d3",cat:"posvisita",titulo:"Dúvida depois da visita",texto:"Oi, {nome}! Depois de ter um tempinho para pensar na visita, ficou alguma dúvida ou algum ponto que você gostaria de conversar melhor? Se fizer sentido, também podemos marcar uma segunda visita."}
+];const CADENCIAS={
  novo:{nome:"Lead novo",passos:[[0,"fu-d0","D0"],[1,"fu-d1","D1"],[3,"fu-d3","D3"],[5,"fu-d5","D5"],[7,"fu-d7","D7"],[14,"fu-d14","D14"]]},
  reativacao:{nome:"Reativação",passos:[[0,"re-sumiu","Dia 0"],[3,"re-valor","Dia 3"],[7,"re-escassez","Dia 7"],[14,"re-despedida","Dia 14"]]},
  posvisita:{nome:"Pós-visita",passos:[[0,"pv-dia","Mesmo dia"],[1,"pv-proposta","Dia 1"],[3,"pv-d3","Dia 3"],[7,"fu-d7","Dia 7"]]}
