@@ -1412,6 +1412,7 @@ function abrirLead(id,aba){
     F("lFgts","Tem FGTS para usar?",S("lFgts",SIM_NAO,d.fgts,"Não informado"))+
     F("lTemImovel","Já tem imóvel próprio?",S("lTemImovel",SIM_NAO,d.temImovel,"Não informado"))+
     F("lEntradaVal","Valor de entrada disponível (R$)",I("lEntradaVal",d.entradaValor,"number",'inputmode="numeric" min="0" step="1000"'))+
+    F("lEntradaSituacao","Situação da entrada",I("lEntradaSituacao",d.entradaSituacao,"text",'placeholder="Ex.: sem entrada, vai juntar, recusou informar"'))+
     F("lPag","Forma de pagamento",S("lPag",PAGAMENTOS,d.pagamento,"Não informado"))+
     F("lCredito","Situação do crédito",S("lCredito",CREDITO,d.credito,"Não informado"))+
     F("lCreditoObs","Detalhes do crédito",I("lCreditoObs",d.creditoObs,"text",'placeholder="Banco, valor aprovado, pendência…"'))+
@@ -1481,7 +1482,7 @@ function abrirLead(id,aba){
       nome:val("lNome"),telefone:val("lTel"),temperatura:temp,imovelId:val("lImovel"),origem:val("lOrigem"),entrada:val("lEntrada")||hoje(),
       proximoContato:val("lProx"),visita:val("lVisita"),proximoPasso:val("lPasso"),obs:val("lObs"),
       email:val("lEmail"),canal:val("lCanal"),melhorHorario:val("lHorario"),moraEm:val("lMora"),estadoCivil:val("lCivil"),composicao:val("lFamilia"),profissao:val("lProfissao"),rendaFamiliar:num("lRenda"),
-      fgts:val("lFgts"),temImovel:val("lTemImovel"),entradaValor:num("lEntradaVal"),pagamento:val("lPag"),credito:val("lCredito"),creditoObs:val("lCreditoObs"),
+      fgts:val("lFgts"),temImovel:val("lTemImovel"),entradaValor:num("lEntradaVal"),entradaSituacao:val("lEntradaSituacao"),pagamento:val("lPag"),credito:val("lCredito"),creditoObs:val("lCreditoObs"),
       finalidade:val("lFin"),tipoDesejado:val("lTipo"),bairrosInteresse:val("lBairros"),quartos:val("lQuartos"),vagas:val("lVagas"),faixaMin:num("lMin"),faixaMax:num("lMax"),orcamento:val("lOrc"),obrigatorios:picks("lObrig"),outrosVistos:val("lVistos"),
       motivoCompra:val("lMotivo"),prazo:val("lPrazo"),decisores:val("lDecisores"),outroCorretor:val("lOutro"),dor:val("lDor"),objecoes:picks("lObj"),objecoesObs:val("lObjObs"),
       motivoEsfriou:val("lEsfriou"),reativarEm:val("lReativar"),gatilhoVolta:val("lGatilho"),esfriouObs:val("lEsfriouObs"),
@@ -1612,24 +1613,74 @@ function exportarVendas(){
 
 /* ---------- Imóvel ---------- */
 function abrirImovel(id){
-  const i=id?state.imoveis.find(x=>x.id===id):null; const d=i?Object.assign({},i):{status:"Anunciando",tipo:"Apartamento"};
+  const i=id?state.imoveis.find(x=>x.id===id):null;
+  const d=i?Object.assign({},i):{status:"Anunciando",tipo:"Apartamento"};
+  let fotos=[];
   const corpo='<div class="pane">'+
     F("iTit","Nome do imóvel",I("iTit",d.titulo,"text",'required placeholder="Ex.: Apto 2q Jardim Itapuã"'),true)+
-    F("iCodigo","Código nos anúncios do Meta",I("iCodigo",d.codigo,"text",'placeholder="Ex.: ITAPUA" autocapitalize="characters"'))+
+    F("iCodigo","Código interno do anúncio",I("iCodigo",d.codigo,"text",'placeholder="Ex.: CA1099" autocapitalize="characters"'))+
+    F("iMetaAdId","ID do anúncio no Meta (opcional)",I("iMetaAdId",d.metaAdId,"text",'placeholder="ID numérico do anúncio do Gerenciador"'))+
     F("iValor","Valor (R$)",I("iValor",d.valor,"number",'inputmode="numeric" min="0" step="1000" placeholder="280000"'))+
-    '<p class="hint full" style="margin:0">Coloque o código entre colchetes no nome da campanha no Meta, ex.: <b style="color:var(--accent)">Teste criativo [ITAPUA]</b>.</p>'+
+    '<p class="hint full" style="margin:0">Coloque o código entre colchetes no nome da campanha no Meta, ex.: <b style="color:var(--accent)">Teste criativo [ITAPUA]</b>. O ID do anúncio do Meta poderá ser vinculado em etapa posterior.</p>'+
     F("iStatus","Status",S("iStatus",STATUS_IMOVEL,d.status))+F("iTipo","Tipo",S("iTipo",TIPOS,d.tipo))+
-    F("iBairro","Bairro",I("iBairro",d.bairro,"text",'placeholder="Ex.: Vila Cristina"'))+F("iQuartos","Quartos",I("iQuartos",d.quartos,"number",'inputmode="numeric" min="0"'))+
+    F("iBairro","Bairro",I("iBairro",d.bairro,"text"))+F("iQuartos","Quartos",I("iQuartos",d.quartos,"number",'inputmode="numeric" min="0"'))+
     F("iArea","Área (m²)",I("iArea",d.area,"number",'inputmode="numeric" min="0"'))+F("iVagas","Vagas",I("iVagas",d.vagas,"number",'inputmode="numeric" min="0"'))+
     F("iLink","Link do anúncio ou fotos",I("iLink",d.link,"url",'inputmode="url" placeholder="https://"'),true)+
-    F("iObs","Observações",T("iObs",d.obs,"Condições, aceita MCMV, documentação…"),true)+'</div>';
+    '<section class="full" style="border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface)">'+
+      '<div class="row" style="align-items:center;margin-bottom:8px"><b>Galeria de fotos do imóvel</b><span class="spacer"></span><span class="sub" id="iFotosCount">0 fotos</span></div>'+
+      '<p class="hint" style="margin:0 0 10px">As fotos ficam vinculadas a este imóvel. A IA de qualificação não enviará imagens; a galeria ficará disponível para os corretores.</p>'+
+      (i?'<label class="btn sm" for="iFotosInput">＋ Adicionar fotos</label><input id="iFotosInput" type="file" accept="image/jpeg,image/png,image/webp" multiple style="display:none">':'<p class="hint" style="margin:0">Salve o imóvel primeiro. Depois reabra o cadastro para adicionar as fotos.</p>')+
+      '<div id="iFotosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:9px;margin-top:12px"><span class="sub">'+(i?'Carregando fotos…':'Nenhuma foto cadastrada')+'</span></div>'+
+    '</section>'+
+    F("iObs","Observações",T("iObs",d.obs,"Condições, aceita MCMV, documentação…"),true)+
+  '</div>';
   abrirDialogo({titulo:i?"Editar imóvel":"Novo imóvel",corpo,onSave:async()=>{
     const titulo=val("iTit"); if(!titulo){toast("Dê um nome ao imóvel");return false}
-    await salvar("imoveis",Object.assign({},d,{titulo,valor:Number(val("iValor"))||0,status:val("iStatus"),tipo:val("iTipo"),bairro:val("iBairro"),quartos:val("iQuartos"),area:val("iArea"),vagas:val("iVagas"),link:val("iLink"),obs:val("iObs"),codigo:val("iCodigo").toUpperCase().replace(/[\[\]\s]/g,"")}));
-    toast(i?"Imóvel atualizado":"Imóvel cadastrado");
+    const savedId=await salvar("imoveis",Object.assign({},d,{titulo,valor:Number(val("iValor"))||0,status:val("iStatus"),tipo:val("iTipo"),bairro:val("iBairro"),quartos:val("iQuartos"),area:val("iArea"),vagas:val("iVagas"),link:val("iLink"),obs:val("iObs"),codigo:val("iCodigo").toUpperCase().replace(/[\[\]\s]/g,""),metaAdId:val("iMetaAdId").trim()}));
+    d.id=savedId;
+    toast(i?"Imóvel atualizado":"Imóvel cadastrado. Reabra para adicionar fotos.");
   },onDelete:i?()=>apagar("imoveis",i.id):null});
-}
 
+  async function carregarFotos(){
+    if(!i||!d.id)return;
+    const {data,error}=await sb.from("imovel_fotos").select("id,storage_path,file_name,mime_type,size_bytes,ordem,created_at").eq("owner_user_id",donoId).eq("imovel_id",String(d.id)).order("ordem",{ascending:true}).order("created_at",{ascending:true});
+    if(error){toast("Não foi possível carregar fotos: "+error.message);return}
+    fotos=data||[]; desenharFotos();
+  }
+  function desenharFotos(){
+    const grid=$("#iFotosGrid"); if(!grid)return;
+    const count=$("#iFotosCount"); if(count)count.textContent=fotos.length+(fotos.length===1?" foto":" fotos");
+    grid.innerHTML=fotos.length?fotos.map(f=>{
+      const url=sb.storage.from("property-photos").getPublicUrl(f.storage_path).data.publicUrl;
+      return '<div style="position:relative;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--bg)"><img src="'+esc(url)+'" alt="'+esc(f.file_name)+'" loading="lazy" style="width:100%;aspect-ratio:1;object-fit:cover;display:block"><button type="button" data-del-ifoto="'+esc(f.id)+'" class="btn sm danger" style="position:absolute;right:5px;top:5px;padding:3px 7px;min-height:26px">×</button><div class="sub" style="padding:5px;font-size:.68rem;overflow-wrap:anywhere">'+esc(f.file_name)+'</div></div>';
+    }).join(""):'<span class="sub">Nenhuma foto cadastrada.</span>';
+    grid.querySelectorAll("[data-del-ifoto]").forEach(btn=>btn.onclick=async()=>{
+      const foto=fotos.find(x=>x.id===btn.dataset.delIfoto); if(!foto)return;
+      if(!confirm("Excluir esta foto do imóvel?"))return;
+      const rm=await sb.storage.from("property-photos").remove([foto.storage_path]);
+      if(rm.error){toast("Não foi possível excluir o arquivo: "+rm.error.message);return}
+      const del=await sb.from("imovel_fotos").delete().eq("owner_user_id",donoId).eq("id",foto.id);
+      if(del.error){toast("Arquivo removido, mas o registro não: "+del.error.message);return}
+      await carregarFotos(); toast("Foto removida");
+    });
+  }
+  const input=$("#iFotosInput");
+  if(input)input.onchange=async()=>{
+    const files=Array.from(input.files||[]); input.value="";
+    for(const file of files){
+      if(!["image/jpeg","image/png","image/webp"].includes(file.type)){toast("Use JPG, PNG ou WEBP.");continue}
+      if(file.size>5*1024*1024){toast("Cada foto deve ter até 5 MB.");continue}
+      const safe=file.name.normalize("NFKD").replace(/[^a-zA-Z0-9._-]/g,"-").slice(-80)||"foto.jpg";
+      const path=donoId+"/"+String(d.id)+"/"+crypto.randomUUID()+"-"+safe;
+      const up=await sb.storage.from("property-photos").upload(path,file,{upsert:false,contentType:file.type,cacheControl:"31536000"});
+      if(up.error){toast("Falha no upload de "+file.name+": "+up.error.message);continue}
+      const ins=await sb.from("imovel_fotos").insert({owner_user_id:donoId,imovel_id:String(d.id),storage_path:path,file_name:file.name,mime_type:file.type,size_bytes:file.size,ordem:fotos.length});
+      if(ins.error){await sb.storage.from("property-photos").remove([path]);toast("Falha ao registrar foto: "+ins.error.message);continue}
+    }
+    await carregarFotos(); toast("Galeria atualizada");
+  };
+  if(i)setTimeout(carregarFotos,80);
+}
 /* ---------- Gasto ---------- */
 function abrirGasto(id){
   const g=id?state.gastos.find(x=>x.id===id):null;
@@ -1697,6 +1748,173 @@ async function importarBackup(file){
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{view=t.dataset.view;try{localStorage.setItem(LS_KEY+"-view",view)}catch(e){}render();window.scrollTo(0,0)});
 $("#fab").onclick=()=>{if(view==="vendas")abrirVenda();else if(view==="imoveis")abrirImovel();else if(view==="gastos")abrirGasto();else if(view==="scripts")abrirScript();else abrirLead()};
 try{const v=localStorage.getItem(LS_KEY+"-view");if(v&&["painel","leads","vendas","scripts","imoveis","gastos","ajustes"].includes(v))view=v}catch(e){}
+
+/* ---------- WhatsApp + Inbox (integração ZapClaw) ---------- */
+/*
+ * CARTEIRA JM - PAINEL WHATSAPP
+ * Cole este bloco dentro do IIFE principal do index.html, imediatamente antes de `init();`.
+ * Ele reutiliza sb, sessao, donoId, view, render, modoSemLogin, esc, toast e abrirLead.
+ */
+const waPanelState = { conversations: [], selectedId: null, messages: [], loading: false, channel: null, search: "" };
+
+const waNav = document.createElement("button");
+waNav.type = "button";
+waNav.className = "tab";
+waNav.dataset.view = "whatsapp";
+waNav.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.5a8.5 8.5 0 0 1-12.7 7.4L3 20l1.2-4.5A8.5 8.5 0 1 1 20.5 11.5Z"/><path d="M8.5 9.2c.6 2.3 2 3.7 4.3 4.4l1-.9 2 .9-.2 1.4c-.1.6-.7 1-1.3 1-3.8-.3-7.2-3.7-7.5-7.5 0-.6.4-1.2 1-1.3l1.4-.2.9 2-1.6 1.2Z"/></svg>WhatsApp';
+document.querySelector("nav.tabs")?.appendChild(waNav);
+waNav.onclick = () => { view = "whatsapp"; try { localStorage.setItem(LS_KEY + "-view", view); } catch (_) {} render(); window.scrollTo(0, 0); };
+
+function waStatusLabel(c) {
+  let status = '<span class="wa-badge">Novo contato</span>';
+  if (c.qualification_status === "complete") status = '<span class="wa-badge wa-done">Qualificado</span>';
+  else if (c.qualification_status === "needs_human" || c.ai_paused) status = '<span class="wa-badge wa-human">Aguardando corretor</span>';
+  else if (c.qualification_status === "collecting") status = '<span class="wa-badge wa-ai">IA qualificando</span>';
+  const temp = ["complete", "needs_human"].includes(c.qualification_status) ? ({ quente: "Quente", morno: "Morno", frio: "Frio" }[c.qualification_temperature] || "") : "";
+  return status + (temp ? ' <span class="wa-badge">' + temp + '</span>' : "");
+}
+function waFmtDate(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+}
+function waSelected() { return waPanelState.conversations.find(c => c.id === waPanelState.selectedId) || null; }
+function waHtml() {
+  const q = waPanelState.search.toLowerCase();
+  const list = waPanelState.conversations.filter(c => `${c.contact_name || ""} ${c.contact_phone || ""}`.toLowerCase().includes(q));
+  const selected = waSelected();
+  const messages = waPanelState.messages.map(m => {
+    const outbound = m.direction === "outbound";
+    let content = esc(m.message_text || "");
+    if (!content && m.message_type === "audio") content = "Áudio recebido";
+    if (!content && m.message_type === "image") content = "Imagem recebida";
+    if (!content && m.message_type === "document") content = "Documento recebido";
+    if (!content) content = `[${esc(m.message_type || "mensagem")}]`;
+    return '<div class="wa-msg ' + (outbound ? "out" : "in") + '"><div>' + content + '</div><small>' + esc(waFmtDate(m.message_timestamp || m.created_at)) + (m.delivery_status ? " · " + esc(m.delivery_status) : "") + '</small></div>';
+  }).join("");
+  const contact = selected ? esc(selected.contact_name || selected.contact_phone || selected.contact_user_id || "Contato") : "";
+  const phone = selected ? esc(selected.contact_phone || selected.contact_user_id || "") : "";
+  const canResume = selected && selected.qualification_status !== "complete" && selected.qualification_status !== "needs_human";
+  return `<style>
+    .wa-shell{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:14px;min-height:68vh}
+    .wa-list,.wa-chat{background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0;overflow:hidden}
+    .wa-list-head,.wa-chat-head{padding:14px;border-bottom:1px solid var(--line)}
+    .wa-list-head h2,.wa-chat-head h2{margin:0;font-family:var(--font-display);font-size:1.2rem}
+    .wa-search{width:100%;margin-top:10px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px;color:var(--ink)}
+    .wa-conv{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:transparent;padding:12px 14px;cursor:pointer;color:var(--ink)}
+    .wa-conv.active{background:var(--surface-2);box-shadow:inset 3px 0 var(--accent)}
+    .wa-conv b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .wa-conv small{color:var(--muted);display:block;margin-top:4px}
+    .wa-badge{display:inline-flex;border-radius:30px;padding:3px 8px;font-size:.68rem;background:var(--surface-2);color:var(--muted);margin-top:6px}
+    .wa-done{color:#57bd83}.wa-human{color:#e6b84f}.wa-ai{color:#78a9e8}
+    .wa-chat{display:flex;flex-direction:column;min-height:68vh}
+    .wa-chat-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .wa-chat-head .spacer{flex:1}
+    .wa-messages{flex:1;min-height:280px;max-height:56vh;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:9px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.015))}
+    .wa-msg{max-width:min(82%,620px);border:1px solid var(--line);border-radius:12px;padding:9px 11px;white-space:pre-wrap;overflow-wrap:anywhere}
+    .wa-msg.in{align-self:flex-start;background:var(--surface-2)}.wa-msg.out{align-self:flex-end;background:#253328;border-color:#355642}
+    .wa-msg small{display:block;color:var(--muted);font-size:.68rem;margin-top:5px}
+    .wa-compose{padding:12px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:flex-end}
+    .wa-compose textarea{flex:1;min-width:0;min-height:42px;max-height:120px;resize:vertical;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px}
+    .wa-empty{padding:28px;color:var(--muted);text-align:center;margin:auto}
+    .wa-note{padding:9px 14px;color:var(--muted);font-size:.78rem;border-top:1px solid var(--line)}
+    @media(max-width:760px){.wa-shell{grid-template-columns:1fr}.wa-list{max-height:36vh;overflow:auto}.wa-chat{min-height:58vh}.wa-messages{max-height:42vh}}
+  </style>
+  <div class="row" style="margin-bottom:12px"><h2 class="sec" style="margin:0">Atendimento pelo WhatsApp</h2><span class="spacer"></span><button class="btn sm" type="button" id="waRefresh">Atualizar</button></div>
+  <div class="wa-shell">
+    <section class="wa-list">
+      <div class="wa-list-head"><h2>Conversas</h2><input class="wa-search" id="waSearch" type="search" placeholder="Buscar nome ou telefone" value="${esc(waPanelState.search)}"></div>
+      <div id="waConvList">${waPanelState.loading ? '<div class="wa-empty">Carregando conversas…</div>' : (list.length ? list.map(c => `<button type="button" class="wa-conv ${c.id === waPanelState.selectedId ? "active" : ""}" data-wa-select="${esc(c.id)}"><b>${esc(c.contact_name || c.contact_phone || c.contact_user_id || "Contato")}</b><small>${esc(c.last_message_preview || "Sem mensagem")}</small><small>${esc(waFmtDate(c.last_message_at))}</small>${waStatusLabel(c)}</button>`).join("") : '<div class="wa-empty">Nenhuma conversa recebida ainda.</div>')}</div>
+    </section>
+    <section class="wa-chat">
+      ${selected ? `<div class="wa-chat-head"><div><h2>${contact}</h2><small style="color:var(--muted)">${phone}</small><div>${waStatusLabel(selected)} ${selected.property_code ? '<span class="wa-badge">Imóvel '+esc(selected.property_code)+'</span>' : ''}</div>${selected.qualification_summary ? '<small style="display:block;color:var(--muted);margin-top:6px;max-width:650px">'+esc(selected.qualification_summary)+'</small>' : ''}</div><span class="spacer"></span>${selected.lead_id ? `<button class="btn sm" type="button" id="waOpenLead">Abrir lead</button>` : ""}${canResume && selected.ai_paused ? '<button class="btn sm primary" type="button" id="waResume">Retomar qualificação</button>' : ''}<button class="btn sm" type="button" id="waPause">Pausar IA</button></div>
+        <div class="wa-messages" id="waMessages">${messages || '<div class="wa-empty">Ainda não há mensagens nesta conversa.</div>'}</div>
+        <form class="wa-compose" id="waCompose"><textarea id="waText" maxlength="4096" placeholder="Escreva uma resposta para o cliente…" required></textarea><button class="btn primary" type="submit" id="waSend">Enviar</button></form>
+        <div class="wa-note">Ao enviar pelo CRM, a IA será pausada nesta conversa para o corretor assumir. A IA não negocia nem apresenta imóveis.</div>` : '<div class="wa-empty">Selecione uma conversa para visualizar as mensagens e responder.</div>'}
+    </section>
+  </div>`;
+}
+async function waLoadConversations() {
+  if (!sb || !donoId) return;
+  waPanelState.loading = true;
+  const { data, error } = await sb.from("whatsapp_conversations").select("*").eq("owner_user_id", donoId).order("last_message_at", { ascending: false }).limit(100);
+  waPanelState.loading = false;
+  if (error) { toast("Não foi possível carregar WhatsApp: " + error.message); return; }
+  waPanelState.conversations = data || [];
+  if (!waPanelState.selectedId && waPanelState.conversations.length) waPanelState.selectedId = waPanelState.conversations[0].id;
+  if (waPanelState.selectedId && !waPanelState.conversations.some(c => c.id === waPanelState.selectedId)) waPanelState.selectedId = waPanelState.conversations[0]?.id || null;
+  await waLoadMessages();
+}
+async function waLoadMessages() {
+  if (!waPanelState.selectedId) { waPanelState.messages = []; waRender(); return; }
+  const { data, error } = await sb.from("whatsapp_messages").select("*").eq("conversation_id", waPanelState.selectedId).order("message_timestamp", { ascending: true }).limit(300);
+  if (error) { toast("Não foi possível carregar mensagens: " + error.message); return; }
+  waPanelState.messages = data || [];
+  waRender();
+}
+function waRender() {
+  if (view !== "whatsapp") return;
+  const app = document.querySelector("#app");
+  if (app) { app.innerHTML = waHtml(); waBind(); }
+}
+function waBind() {
+  document.querySelectorAll("[data-wa-select]").forEach(b => b.onclick = async () => { waPanelState.selectedId = b.dataset.waSelect; await waLoadMessages(); });
+  const search = document.getElementById("waSearch"); if (search) search.oninput = () => { waPanelState.search = search.value; waRender(); const next = document.getElementById("waSearch"); if (next) { next.focus(); next.setSelectionRange(next.value.length, next.value.length); } };
+  const refresh = document.getElementById("waRefresh"); if (refresh) refresh.onclick = async () => { await waLoadConversations(); };
+  const pause = document.getElementById("waPause"); if (pause) pause.onclick = async () => {
+    const c = waSelected(); if (!c) return;
+    const { error } = await sb.from("whatsapp_conversations").update({ ai_paused: true, human_handoff_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", c.id).eq("owner_user_id", donoId);
+    if (error) toast("Não foi possível pausar: " + error.message); else { toast("IA pausada nesta conversa"); await waLoadConversations(); }
+  };
+  const resume = document.getElementById("waResume"); if (resume) resume.onclick = async () => {
+    const c = waSelected(); if (!c) return;
+    if (c.qualification_status === "complete" || c.qualification_status === "needs_human") { toast("A qualificação terminou. O corretor deve continuar."); return; }
+    const { error } = await sb.from("whatsapp_conversations").update({ ai_paused: false, human_handoff_at: null, updated_at: new Date().toISOString() }).eq("id", c.id).eq("owner_user_id", donoId);
+    if (error) toast("Não foi possível retomar: " + error.message); else { toast("Qualificação retomada"); await waLoadConversations(); }
+  };
+  const openLead = document.getElementById("waOpenLead"); if (openLead) openLead.onclick = () => { const c = waSelected(); if (c?.lead_id) abrirLead(c.lead_id); };
+  const form = document.getElementById("waCompose"); if (form) form.onsubmit = async e => {
+    e.preventDefault(); const c = waSelected(); const input = document.getElementById("waText"); const button = document.getElementById("waSend");
+    const text = (input?.value || "").trim(); if (!c || !text) return;
+    button.disabled = true; button.textContent = "Enviando…";
+    const { data, error } = await sb.functions.invoke("zapclaw-send", { body: { conversation_id: c.id, text } });
+    button.disabled = false; button.textContent = "Enviar";
+    if (error || !data?.ok) { toast("Não foi possível enviar: " + (data?.error || error?.message || "erro")); return; }
+    input.value = "";
+    toast(data.status === "held_for_approval" ? "Envio aguardando aprovação no ZapClaw" : data.status === "delivery_unknown" ? "Entrega incerta. Confira o status no ZapClaw antes de reenviar." : "Mensagem aceita para envio pelo CRM");
+    await waLoadConversations();
+  };
+  const box = document.getElementById("waMessages"); if (box) box.scrollTop = box.scrollHeight;
+}
+
+const renderWithoutWhatsapp = render;
+render = function() {
+  if (view !== "whatsapp") return renderWithoutWhatsapp();
+  if (!sessao) return;
+  modoSemLogin(false);
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-current", t.dataset.view === "whatsapp" ? "page" : "false"));
+  const fab = document.getElementById("fab"); if (fab) fab.hidden = true;
+  const app = document.querySelector("#app"); if (app) app.innerHTML = '<div class="loading">Carregando conversas…</div>';
+  waLoadConversations();
+};
+
+// Atualiza a tela quando houver novas mensagens no Supabase Realtime.
+function waSubscribeRealtime() {
+  if (!sb || !sessao || !donoId) return;
+  if (waPanelState.channel) sb.removeChannel(waPanelState.channel);
+  waPanelState.channel = sb.channel("wa-inbox-" + donoId)
+    .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_messages" }, async () => { if (view === "whatsapp") await waLoadConversations(); })
+    .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_conversations" }, async () => { if (view === "whatsapp") await waLoadConversations(); })
+    .subscribe();
+}
+const entrarBase = entrar;
+entrar = async function() { await entrarBase(); waSubscribeRealtime(); };
+
+// Permite restaurar a aba WhatsApp depois de atualizar o navegador.
+try { if (localStorage.getItem(LS_KEY + "-view") === "whatsapp") view = "whatsapp"; } catch (_) {}
+
+
 init();
 if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})})}
 })();
