@@ -2882,7 +2882,7 @@ try{const v=localStorage.getItem(LS_KEY+"-view");if(v&&["painel","leads","vendas
  * Cole este bloco dentro do IIFE principal do index.html, imediatamente antes de `init();`.
  * Ele reutiliza sb, sessao, donoId, view, render, modoSemLogin, esc, toast e abrirLead.
  */
-const waPanelState = { conversations: [], selectedId: null, messages: [], loading: false, channel: null, search: "" };
+const waPanelState = { conversations: [], selectedId: null, messages: [], loading: false, channel: null, search: "", mobileChatOpen: false };
 
 const waNav = document.createElement("button");
 waNav.type = "button";
@@ -3086,14 +3086,14 @@ html[data-theme="light"] .brand h1{
 }
 
 </style>
-  <div class="row" style="margin-bottom:12px"><h2 class="sec" style="margin:0">Atendimento pelo WhatsApp</h2><span class="spacer"></span><button class="btn sm" type="button" id="waRefresh">Atualizar</button></div>
-  <div class="wa-shell">
+  <div class="row wa-page-head" style="margin-bottom:12px"><h2 class="sec" style="margin:0">Atendimento pelo WhatsApp</h2><span class="spacer"></span><button class="btn sm" type="button" id="waRefresh">Atualizar</button></div>
+  <div class="wa-shell${selected && waPanelState.mobileChatOpen ? " wa-mobile-chat-open" : ""}">
     <section class="wa-list">
       <div class="wa-list-head"><h2>Conversas</h2><input class="wa-search" id="waSearch" type="search" placeholder="Buscar nome ou telefone" value="${esc(waPanelState.search)}"></div>
       <div id="waConvList">${waPanelState.loading ? '<div class="wa-empty">Carregando conversas…</div>' : (list.length ? list.map(c => `<button type="button" class="wa-conv ${c.id === waPanelState.selectedId ? "active" : ""}" data-wa-select="${esc(c.id)}"><b>${esc(c.contact_name || c.contact_phone || c.contact_user_id || "Contato")}</b><small>${esc(c.last_message_preview || "Sem mensagem")}</small><small>${esc(waFmtDate(c.last_message_at))}</small>${waStatusLabel(c)}</button>`).join("") : '<div class="wa-empty">Nenhuma conversa recebida ainda.</div>')}</div>
     </section>
     <section class="wa-chat">
-      ${selected ? `<div class="wa-chat-head"><div><h2>${contact}</h2><small style="color:var(--muted)">${phone}</small><div>${waStatusLabel(selected)} ${selected.property_code ? '<span class="wa-badge">Imóvel '+esc(selected.property_code)+'</span>' : ''}</div>${selected.qualification_summary ? '<small style="display:block;color:var(--muted);margin-top:6px;max-width:650px">'+esc(selected.qualification_summary)+'</small>' : ''}</div><span class="spacer"></span>${selected.lead_id ? `<button class="btn sm" type="button" id="waOpenLead">Abrir lead</button>` : ""}${canResume && selected.ai_paused ? '<button class="btn sm primary" type="button" id="waResume">Retomar qualificação</button>' : ''}<button class="btn sm" type="button" id="waPause">Pausar IA</button></div>
+      ${selected ? `<div class="wa-chat-head"><button class="btn sm wa-back-mobile" type="button" id="waBackToList">← Conversas</button><div class="wa-contact-block"><h2>${contact}</h2><small style="color:var(--muted)">${phone}</small><div>${waStatusLabel(selected)} ${selected.property_code ? '<span class="wa-badge">Imóvel '+esc(selected.property_code)+'</span>' : ''}</div>${selected.qualification_summary ? '<small style="display:block;color:var(--muted);margin-top:6px;max-width:650px">'+esc(selected.qualification_summary)+'</small>' : ''}</div><span class="spacer"></span>${selected.lead_id ? `<button class="btn sm" type="button" id="waOpenLead">Abrir lead</button>` : ""}${canResume && selected.ai_paused ? '<button class="btn sm primary" type="button" id="waResume">Retomar qualificação</button>' : ''}<button class="btn sm" type="button" id="waPause">Pausar IA</button></div>
         <div class="wa-messages" id="waMessages">${messages || '<div class="wa-empty">Ainda não há mensagens nesta conversa.</div>'}</div>
         <form class="wa-compose" id="waCompose"><textarea id="waText" maxlength="4096" placeholder="Escreva uma resposta para o cliente…" required></textarea><button class="btn primary" type="submit" id="waSend">Enviar</button></form>
         <div class="wa-note">Ao enviar pelo CRM, a IA será pausada nesta conversa para o corretor assumir. A IA não negocia nem apresenta imóveis.</div>` : '<div class="wa-empty">Selecione uma conversa para visualizar as mensagens e responder.</div>'}
@@ -3124,7 +3124,8 @@ function waRender() {
   if (app) { app.innerHTML = waHtml(); waBind(); }
 }
 function waBind() {
-  document.querySelectorAll("[data-wa-select]").forEach(b => b.onclick = async () => { waPanelState.selectedId = b.dataset.waSelect; await waLoadMessages(); });
+  document.querySelectorAll("[data-wa-select]").forEach(b => b.onclick = async () => { waPanelState.selectedId = b.dataset.waSelect; waPanelState.mobileChatOpen = true; await waLoadMessages(); });
+  const backToList = document.getElementById("waBackToList"); if (backToList) backToList.onclick = () => { waPanelState.mobileChatOpen = false; waRender(); };
   const search = document.getElementById("waSearch"); if (search) search.oninput = () => { waPanelState.search = search.value; waRender(); const next = document.getElementById("waSearch"); if (next) { next.focus(); next.setSelectionRange(next.value.length, next.value.length); } };
   const refresh = document.getElementById("waRefresh"); if (refresh) refresh.onclick = async () => { await waLoadConversations(); };
   const pause = document.getElementById("waPause"); if (pause) pause.onclick = async () => {
@@ -3270,6 +3271,249 @@ if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.s
   }
 })();
 </script>
+
+
+<style id="jm-v11-form-whatsapp">
+
+/* V11 — campos de cadastro com espaçamento consistente em desktop e celular. */
+dialog#dlg #dlgForm .f input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+dialog#dlg #dlgForm .f select,
+dialog#dlg #dlgForm .f textarea,
+dialog#dlg #dlgForm input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+dialog#dlg #dlgForm select,
+dialog#dlg #dlgForm textarea {
+  box-sizing:border-box!important;
+  padding:13px 17px!important;
+  text-indent:0!important;
+  line-height:1.45!important;
+  max-width:100%!important;
+}
+dialog#dlg #dlgForm .f input[type="date"],
+dialog#dlg #dlgForm .f input[type="datetime-local"],
+dialog#dlg #dlgForm input[type="date"],
+dialog#dlg #dlgForm input[type="datetime-local"] {
+  padding:11px 15px!important;
+}
+dialog#dlg #dlgForm .f textarea,
+dialog#dlg #dlgForm textarea {
+  padding:14px 17px!important;
+  min-height:96px;
+}
+dialog#dlg #dlgForm .f { min-width:0; }
+dialog#dlg #dlgForm .f label { display:block; margin:0 0 7px; }
+dialog#dlg #dlgForm input::placeholder,
+dialog#dlg #dlgForm textarea::placeholder { opacity:.78; }
+
+@media (max-width:760px) {
+  /* A Inbox vira uma navegação em duas etapas: lista e conversa. */
+  #app .wa-page-head {
+    display:flex!important;
+    flex-wrap:wrap!important;
+    align-items:center!important;
+    gap:9px!important;
+    margin-bottom:12px!important;
+  }
+  #app .wa-page-head h2 {
+    flex:1 1 auto!important;
+    min-width:0!important;
+    font-size:1.08rem!important;
+  }
+  #app .wa-page-head #waRefresh {
+    flex:0 0 auto!important;
+    min-height:38px!important;
+    padding:8px 12px!important;
+  }
+  #app .wa-shell {
+    display:block!important;
+    min-height:0!important;
+    padding:8px!important;
+    overflow:visible!important;
+    border-radius:17px!important;
+  }
+  #app .wa-shell .wa-list,
+  #app .wa-shell .wa-chat {
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0!important;
+    border-radius:15px!important;
+    box-sizing:border-box!important;
+  }
+  #app .wa-shell:not(.wa-mobile-chat-open) .wa-chat {
+    display:none!important;
+  }
+  #app .wa-shell.wa-mobile-chat-open .wa-list {
+    display:none!important;
+  }
+  #app .wa-list {
+    display:flex!important;
+    flex-direction:column!important;
+    height:auto!important;
+    max-height:none!important;
+    overflow:hidden!important;
+  }
+  #app .wa-list-head {
+    flex:0 0 auto!important;
+    padding:14px!important;
+  }
+  #app .wa-list-head h2 { font-size:1.08rem!important; }
+  #app .wa-search {
+    display:block!important;
+    width:100%!important;
+    min-height:44px!important;
+    margin-top:10px!important;
+    padding:12px 14px!important;
+    box-sizing:border-box!important;
+    font-size:16px!important;
+  }
+  #app #waConvList {
+    min-height:180px!important;
+    max-height:calc(100dvh - 360px)!important;
+    padding:5px 9px 12px!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain;
+  }
+  #app .wa-conv {
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin:5px 0!important;
+    padding:13px 14px!important;
+    border-radius:12px!important;
+    box-sizing:border-box!important;
+    text-align:left!important;
+    white-space:normal!important;
+  }
+  #app .wa-conv b,
+  #app .wa-conv small {
+    max-width:100%!important;
+    overflow-wrap:anywhere!important;
+  }
+
+  /* Ao abrir uma conversa, o chat ocupa a área útil sem ficar lado a lado com a lista. */
+  #app .wa-chat {
+    display:flex!important;
+    flex-direction:column!important;
+    height:clamp(360px,calc(100dvh - 365px),620px)!important;
+    min-height:360px!important;
+    max-height:calc(100dvh - 230px)!important;
+    overflow:hidden!important;
+  }
+  #app .wa-chat-head {
+    display:flex!important;
+    flex:0 0 auto!important;
+    flex-wrap:wrap!important;
+    align-items:center!important;
+    gap:8px!important;
+    padding:12px!important;
+    min-width:0!important;
+  }
+  #app .wa-back-mobile {
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    flex:0 0 auto!important;
+    width:auto!important;
+    min-height:38px!important;
+    padding:8px 13px!important;
+    border-radius:10px!important;
+    white-space:nowrap!important;
+  }
+  #app .wa-contact-block {
+    order:2!important;
+    flex:1 1 100%!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  #app .wa-contact-block h2 {
+    font-size:1.06rem!important;
+    line-height:1.25!important;
+    overflow-wrap:anywhere!important;
+  }
+  #app .wa-chat-head .spacer { display:none!important; }
+  #app .wa-chat-head > button:not(.wa-back-mobile) {
+    flex:1 1 calc(50% - 6px)!important;
+    min-width:0!important;
+    max-width:100%!important;
+    min-height:38px!important;
+    padding:8px 10px!important;
+    font-size:.76rem!important;
+    white-space:normal!important;
+    line-height:1.2!important;
+  }
+  #app .wa-messages {
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    max-height:none!important;
+    padding:13px 11px!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain!important;
+    gap:9px!important;
+  }
+  #app .wa-msg {
+    max-width:88%!important;
+    padding:10px 12px!important;
+    font-size:.9rem!important;
+    line-height:1.4!important;
+  }
+  #app .wa-compose {
+    display:flex!important;
+    flex:0 0 auto!important;
+    align-items:flex-end!important;
+    gap:8px!important;
+    padding:10px!important;
+  }
+  #app .wa-compose textarea {
+    flex:1 1 auto!important;
+    min-width:0!important;
+    min-height:44px!important;
+    max-height:100px!important;
+    padding:12px 14px!important;
+    font-size:16px!important;
+  }
+  #app .wa-compose #waSend {
+    flex:0 0 72px!important;
+    width:72px!important;
+    min-width:72px!important;
+    min-height:44px!important;
+    padding:9px 7px!important;
+    white-space:nowrap!important;
+  }
+  #app .wa-note {
+    flex:0 0 auto!important;
+    padding:8px 10px!important;
+    font-size:.68rem!important;
+    line-height:1.35!important;
+  }
+
+  /* Espaçamento também nos campos fora do modal. */
+  #app input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+  #app select,
+  #app textarea {
+    box-sizing:border-box!important;
+    padding-inline:15px!important;
+  }
+}
+
+@media (min-width:761px) {
+  #app .wa-back-mobile { display:none!important; }
+}
+
+/* No tema claro, a Inbox conserva contraste alto. */
+html[data-theme="light"] #app .wa-search,
+html[data-theme="light"] #app .wa-compose textarea {
+  background:rgba(255,255,255,.92)!important;
+  color:#24241f!important;
+}
+html[data-theme="light"] #app .wa-conv { color:#292720!important; }
+html[data-theme="light"] #app .wa-conv small { color:#625d54!important; }
+
+@media (prefers-reduced-motion:reduce) {
+  #app .wa-conv { transition:none!important; }
+}
+
+</style>
 
 </body>
 </html>
