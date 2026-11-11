@@ -3300,6 +3300,32 @@ if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.s
 })();
 </script>
 
+<script id="jm-proposal2-nav-mount">
+(function(){
+  "use strict";
+  const nav=document.querySelector("header.top nav.tabs");
+  if(!nav || !document.body) return;
+  const originalParent=nav.parentNode;
+  const originalNext=nav.nextSibling;
+  const media=window.matchMedia("(max-width: 760px)");
+  function placeNavigation(){
+    if(media.matches){
+      if(nav.parentNode!==document.body) document.body.appendChild(nav);
+      document.body.classList.add("jm-mobile-app-nav");
+    }else{
+      if(nav.parentNode!==originalParent){
+        if(originalNext && originalNext.parentNode===originalParent) originalParent.insertBefore(nav, originalNext);
+        else originalParent.appendChild(nav);
+      }
+      document.body.classList.remove("jm-mobile-app-nav");
+    }
+  }
+  placeNavigation();
+  if(media.addEventListener) media.addEventListener("change",placeNavigation);
+  else if(media.addListener) media.addListener(placeNavigation);
+})();
+</script>
+
 <script id="jm-glass-interactions">
 (function(){
   "use strict";
@@ -3754,5 +3780,890 @@ html[data-theme="light"] #app .wa-conv small { color:#625d54!important; }
 }
 </style>
 
+
+<style id="jm-proposal2-mobile-only">
+/* ============================================================
+   CARTEIRA JM — PROPOSTA MOBILE 2
+   Camada exclusiva para celulares. Não altera desktop/tablet.
+   ============================================================ */
+@media (max-width: 760px) {
+  :root {
+    --jm-mobile-nav-h: 76px;
+    --jm-mobile-header-h: 66px;
+    --jm-mobile-workbar-h: 56px;
+  }
+
+  html, body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    overscroll-behavior-x: none !important;
+  }
+  body {
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+    -webkit-font-smoothing: antialiased;
+    background: radial-gradient(700px 320px at 80% -5%, rgba(214,170,92,.10), transparent 62%), var(--bg) !important;
+  }
+
+  /* Cabeçalho de aplicativo: marca em cima, área atual logo abaixo. */
+  header.top {
+    position: sticky !important;
+    inset: 0 0 auto 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: var(--jm-mobile-header-h) !important;
+    z-index: 120 !important;
+    padding-top: var(--top) !important;
+    background: var(--jm-glass-strong) !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--jm-glass-border) !important;
+    box-shadow: 0 6px 24px rgba(0,0,0,.12) !important;
+    /* Evita criar um containing block que desloca a navegação fixa. */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .top .wrap {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: var(--jm-mobile-header-h) !important;
+    height: auto !important;
+    padding: 9px 15px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+  .brand {
+    width: auto !important;
+    max-width: calc(100% - 50px) !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 9px !important;
+  }
+  img.mono {
+    width: 40px !important;
+    height: 40px !important;
+    flex: 0 0 40px !important;
+    border-radius: 12px !important;
+    object-fit: cover !important;
+  }
+  .brand-txt { min-width: 0 !important; gap: 2px !important; }
+  .brand h1 {
+    max-width: 100% !important;
+    font-size: 1rem !important;
+    line-height: 1.08 !important;
+    white-space: nowrap !important;
+  }
+  .brand .role {
+    max-width: 100% !important;
+    font-size: .51rem !important;
+    line-height: 1.25 !important;
+    letter-spacing: .09em !important;
+    white-space: normal !important;
+  }
+  .brand .sync { display: none !important; }
+  nav.tabs { display: flex !important; }
+  .top .gear {
+    display: inline-flex !important;
+    flex: 0 0 40px !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 8px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid var(--jm-glass-border) !important;
+    border-radius: 13px !important;
+    background: var(--jm-glass) !important;
+    color: var(--accent) !important;
+  }
+  .top .gear svg { width: 20px !important; height: 20px !important; }
+
+  /* Segunda barra compacta: nome da área + alternância de tema por ícone. */
+  .jm-workbar {
+    position: sticky !important;
+    top: calc(var(--jm-mobile-header-h) + var(--top)) !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    height: var(--jm-mobile-workbar-h) !important;
+    min-height: var(--jm-mobile-workbar-h) !important;
+    padding: 0 15px !important;
+    z-index: 110 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border-top: 0 !important;
+    border-radius: 0 !important;
+    background: var(--jm-glass-strong) !important;
+    box-shadow: 0 5px 18px rgba(0,0,0,.07) !important;
+    backdrop-filter: blur(16px) saturate(145%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(145%) !important;
+  }
+  .jm-workbar-left, .jm-workbar-right { min-width: 0 !important; gap: 8px !important; }
+  .jm-workbar-left { flex: 1 1 auto !important; overflow: hidden !important; }
+  .jm-workbar-right { flex: 0 0 auto !important; margin-left: auto !important; }
+  .jm-rail-toggle { display: none !important; }
+  .jm-workspace-mark {
+    display: grid !important;
+    width: 34px !important;
+    height: 34px !important;
+    flex: 0 0 34px !important;
+    border-radius: 11px !important;
+  }
+  .jm-workspace-mark svg { width: 18px !important; height: 18px !important; }
+  .jm-workbar-titles { min-width: 0 !important; gap: 1px !important; }
+  .jm-breadcrumb {
+    display: block !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-size: .46rem !important;
+    line-height: 1.15 !important;
+    letter-spacing: .10em !important;
+  }
+  .jm-workbar-titles strong {
+    display: block !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: .91rem !important;
+    line-height: 1.16 !important;
+  }
+  .jm-date { display: none !important; }
+  .jm-theme-toggle {
+    display: inline-flex !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 !important;
+    border-radius: 13px !important;
+    gap: 0 !important;
+    font-size: 0 !important;
+  }
+  .jm-theme-icon, .jm-theme-icon svg {
+    display: block !important;
+    width: 19px !important;
+    height: 19px !important;
+  }
+  #jmThemeLabel { display: none !important; }
+
+  /* Área de conteúdo com ritmo e margens uniformes. */
+  main#app.wrap {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 14px 14px calc(var(--jm-mobile-nav-h) + 38px + var(--bot)) !important;
+    overflow-x: clip !important;
+  }
+  #app > * { min-width: 0 !important; max-width: 100% !important; }
+  #app .row { min-width: 0 !important; max-width: 100% !important; }
+  #app h2.sec { margin: 18px 0 12px !important; font-size: 1.22rem !important; line-height: 1.18 !important; }
+  #app .sub { line-height: 1.42 !important; }
+  #app .panel, #app .hello, #app .goal, #app .today, #app .lead,
+  #app .scard, #app .venda, #app .prop, #app .empty, #app .kpi,
+  #app .settings > div {
+    border-radius: 17px !important;
+    min-width: 0 !important;
+  }
+  #app .panel { padding: 15px !important; }
+  #app .btn { min-height: 42px !important; border-radius: 12px !important; }
+  #app .btn.sm { min-height: 36px !important; padding: 7px 11px !important; }
+
+  /* Ação principal sempre em posição fixa, sem ocupar o cabeçalho. */
+  #fab.fab:not([hidden]) {
+    position: fixed !important;
+    top: auto !important;
+    left: auto !important;
+    right: max(16px, env(safe-area-inset-right, 0px)) !important;
+    bottom: calc(var(--jm-mobile-nav-h) + 13px + var(--bot)) !important;
+    z-index: 990 !important;
+    display: grid !important;
+    place-items: center !important;
+    width: 56px !important;
+    height: 56px !important;
+    min-width: 56px !important;
+    min-height: 56px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    font-size: 0 !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,.34), 0 0 0 1px rgba(222,179,82,.28) !important;
+  }
+  #fab.fab:not([hidden])::before {
+    content: "+" !important;
+    display: block !important;
+    font-size: 2rem !important;
+    line-height: 1 !important;
+    font-weight: 500 !important;
+  }
+
+  /* Navegação inferior persistente, com sete áreas. */
+  nav.tabs {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    z-index: 1000 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    justify-content: space-around !important;
+    gap: 2px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: calc(var(--jm-mobile-nav-h) + var(--bot)) !important;
+    min-height: calc(var(--jm-mobile-nav-h) + var(--bot)) !important;
+    margin: 0 !important;
+    padding: 7px max(6px, env(safe-area-inset-right, 0px)) calc(7px + var(--bot)) max(6px, env(safe-area-inset-left, 0px)) !important;
+    border: 0 !important;
+    border-top: 1px solid var(--jm-glass-border) !important;
+    border-radius: 20px 20px 0 0 !important;
+    background: var(--jm-glass-strong) !important;
+    box-shadow: 0 -10px 34px rgba(0,0,0,.24) !important;
+    backdrop-filter: blur(22px) saturate(165%) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(165%) !important;
+  }
+  nav.tabs .tab {
+    display: flex !important;
+    flex: 1 1 0 !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    min-height: 58px !important;
+    padding: 5px 1px !important;
+    border-radius: 12px !important;
+    background: transparent !important;
+    color: var(--muted) !important;
+    font-size: .57rem !important;
+    line-height: 1.1 !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+  }
+  nav.tabs .tab svg { width: 20px !important; height: 20px !important; flex: 0 0 auto !important; }
+  nav.tabs .tab[aria-current="page"] {
+    color: var(--accent) !important;
+    background: var(--accent-soft) !important;
+    box-shadow: inset 0 0 0 1px var(--accent-line), 0 3px 12px rgba(193,139,37,.12) !important;
+  }
+  body.is-rail header.top { width: 100% !important; }
+  body.is-rail .jm-workbar { left: auto !important; }
+  body.is-rail main#app.wrap { margin-left: 0 !important; }
+  #app, #toastHost { scroll-margin-top: 130px !important; }
+  .toast { bottom: calc(var(--jm-mobile-nav-h) + 30px + var(--bot)) !important; }
+
+  /* Painel: banner compacto, saudação com respiro e meta horizontal. */
+  #app .painel-banner {
+    min-height: 132px !important;
+    height: auto !important;
+    margin: 0 0 13px !important;
+    padding: 17px 16px !important;
+    border-radius: 17px !important;
+    border: 0 !important;
+    background-position: 58% center !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,.20) !important;
+  }
+  #app .painel-banner-copy { max-width: 100% !important; }
+  #app .painel-banner-copy .eyebrow { margin-bottom: 7px !important; font-size: .54rem !important; letter-spacing: .15em !important; }
+  #app .painel-banner-copy h2 { max-width: 100% !important; font-size: clamp(1.22rem, 5.5vw, 1.62rem) !important; line-height: 1.08 !important; }
+  #app .painel-banner-copy p { margin-top: 7px !important; font-size: .62rem !important; line-height: 1.35 !important; letter-spacing: .08em !important; }
+  #app .hello {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    margin: 0 0 13px !important;
+    padding: 17px 16px !important;
+    border: 1px solid var(--jm-glass-border) !important;
+    border-radius: 18px !important;
+    background: var(--jm-glass) !important;
+    box-shadow: 0 7px 22px rgba(0,0,0,.10) !important;
+  }
+  #app .hello h2 { margin: 0 !important; font-size: clamp(1.18rem, 5vw, 1.42rem) !important; line-height: 1.18 !important; }
+  #app .hello h2 em { color: var(--accent) !important; }
+  #app .hello p { margin: 5px 0 0 !important; font-size: .73rem !important; line-height: 1.4 !important; }
+  #app .hello > .spacer { display: none !important; }
+  #app .hello > .periodo-tools { width: 100% !important; }
+  #app .hero { display: grid !important; grid-template-columns: minmax(0,1fr) !important; gap: 10px !important; }
+  #app .goal {
+    display: grid !important;
+    grid-template-columns: 86px minmax(0,1fr) !important;
+    align-items: center !important;
+    justify-content: initial !important;
+    gap: 14px !important;
+    min-height: 112px !important;
+    padding: 13px 15px !important;
+    text-align: left !important;
+    background: var(--jm-glass) !important;
+    border: 1px solid var(--jm-glass-border) !important;
+    color: var(--ink) !important;
+    box-shadow: 0 8px 22px rgba(0,0,0,.12) !important;
+  }
+  #app .goal .ring { width: 82px !important; height: 82px !important; }
+  #app .ring .in b { font-size: 1.35rem !important; }
+  #app .ring .in span { font-size: .68rem !important; color: var(--muted) !important; }
+  #app .goal .t { font-size: .94rem !important; line-height: 1.25 !important; }
+  #app .goal .s { margin-top: 4px !important; font-size: .78rem !important; line-height: 1.3 !important; color: var(--accent) !important; }
+  #app .kpis { display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 9px !important; }
+  #app .kpi { min-height: 108px !important; padding: 12px !important; border-radius: 15px !important; }
+  #app .kpi .ic { width: 30px !important; height: 30px !important; margin-bottom: 7px !important; }
+  #app .kpi .l { font-size: .63rem !important; line-height: 1.25 !important; }
+  #app .kpi .v { margin-top: 3px !important; font-size: 1.16rem !important; line-height: 1.12 !important; overflow-wrap: anywhere !important; }
+  #app .kpi .h { margin-top: 3px !important; font-size: .68rem !important; line-height: 1.3 !important; }
+  #app .today, #app .charts { display: grid !important; grid-template-columns: minmax(0,1fr) !important; gap: 10px !important; }
+  #app .today .panel, #app .charts .panel { min-width: 0 !important; padding: 14px !important; }
+  #app .today h3, #app .charts h3 { font-size: .78rem !important; line-height: 1.25 !important; }
+  #app .donut-wrap { gap: 16px !important; flex-wrap: wrap !important; }
+  #app .donut { width: 92px !important; height: 92px !important; flex: 0 0 92px !important; }
+  #app .tablewrap { max-width: 100% !important; border-radius: 14px !important; }
+
+  /* Período e datas: controle compacto, sem rótulos quebrados. */
+  #app .periodo-tools {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 9px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  #app .periodo-tools .period-segment {
+    display: flex !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 auto !important;
+    gap: 4px !important;
+    padding: 4px !important;
+    border-radius: 13px !important;
+  }
+  #app .periodo-tools .period-segment button {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    min-height: 38px !important;
+    padding: 7px 5px !important;
+    border-radius: 10px !important;
+    font-size: .76rem !important;
+  }
+  #app .period-date-row {
+    display: grid !important;
+    grid-template-columns: 66px minmax(0,1fr) 5px minmax(0,1fr) auto !important;
+    gap: 4px !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  #app .period-date-title {
+    grid-column: auto !important;
+    min-width: 0 !important;
+    font-size: .68rem !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+  }
+  #app .period-date-input {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    padding: 7px 7px !important;
+    border-radius: 11px !important;
+    font-size: .72rem !important;
+  }
+  #app .period-date-separator { text-align: center !important; font-size: .72rem !important; }
+  #app .period-date-row > [data-periodo-aplicar] { min-width: 63px !important; min-height: 42px !important; padding: 7px 9px !important; font-size: .72rem !important; }
+  #app .row:has(>.periodo-tools) {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  #app .row:has(>.periodo-tools) > .spacer { display: none !important; }
+  #app .row:has(>.periodo-tools) > .periodo-tools { grid-column: 1 !important; width: 100% !important; }
+
+  /* Leads: busca, chips de temperatura e filtros em cartões de toque. */
+  #app .filters {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 9px !important;
+    margin: 0 0 14px !important;
+  }
+  #app .filters > input[type="search"] { grid-column: 1 !important; width: 100% !important; min-height: 48px !important; }
+  #app .filters .lead-temp-filter {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 7px !important;
+    width: 100% !important;
+    padding: 7px !important;
+    border-radius: 15px !important;
+  }
+  #app .lead-temp-main { display: grid !important; grid-template-columns: repeat(3,minmax(0,1fr)) !important; gap: 6px !important; }
+  #app .lead-temp-main button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 41px !important;
+    padding: 7px 3px !important;
+    border-radius: 11px !important;
+    font-size: .78rem !important;
+    white-space: nowrap !important;
+  }
+  #app .lead-temp-all { display: flex !important; justify-content: center !important; width: 100% !important; }
+  #app .lead-temp-all button { width: min(54%,190px) !important; min-height: 39px !important; border-radius: 11px !important; }
+  #app .filters > select, #app .filters > button { width: 100% !important; min-width: 0 !important; min-height: 45px !important; }
+  #app .kanban-board {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: minmax(275px,84vw) !important;
+    gap: 10px !important;
+    margin-inline: -2px !important;
+    padding: 2px 2px 14px !important;
+    overflow-x: auto !important;
+    overscroll-behavior-inline: contain !important;
+    scroll-snap-type: x mandatory !important;
+  }
+  #app .kanban-column { min-height: 280px !important; padding: 10px !important; border-radius: 15px !important; scroll-snap-align: start !important; }
+  #app .kanban-head { padding: 3px 2px 8px !important; }
+  #app .lead { padding: 13px !important; }
+  #app .lead .head { flex-direction: column !important; align-items: stretch !important; gap: 8px !important; }
+  #app .lead .temp { display: flex !important; width: 100% !important; gap: 4px !important; }
+  #app .lead .temp button { flex: 1 1 0 !important; min-width: 0 !important; padding: 7px 3px !important; font-size: .69rem !important; }
+  #app .lead .foot { display: flex !important; flex-wrap: wrap !important; gap: 7px !important; }
+
+  /* Vendas: KPIs em duas colunas, recebimentos em cartões e venda em lista. */
+  #app .kpis > .kpi:nth-child(3):last-child { grid-column: 1/-1 !important; }
+  #app .comis { display: grid !important; grid-template-columns: minmax(0,1fr) !important; gap: 9px !important; margin-top: 11px !important; }
+  #app .pessoa {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    min-width: 0 !important;
+    padding: 14px !important;
+    border: 1px solid var(--jm-glass-border) !important;
+    border-radius: 15px !important;
+    background: var(--jm-glass) !important;
+  }
+  #app .pessoa img { width: 42px !important; height: 42px !important; flex: 0 0 42px !important; object-fit: contain !important; }
+  #app .pessoa .rec { font-size: 1.28rem !important; line-height: 1.15 !important; }
+  #app .vlist { display: grid !important; grid-template-columns: minmax(0,1fr) !important; gap: 10px !important; }
+  #app .venda { display: grid !important; grid-template-columns: minmax(0,1fr) !important; gap: 9px !important; padding: 14px !important; }
+  #app .venda .v { text-align: left !important; align-items: flex-start !important; }
+  #app .venda .partes { display: flex !important; flex-wrap: wrap !important; gap: 7px !important; }
+  #app .venda .parte { max-width: 100% !important; }
+
+  /* Scripts: categorias em faixa deslizante e cartões de conteúdo. */
+  #app .scats {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 7px !important;
+    width: calc(100% + 2px) !important;
+    margin: 0 -1px 13px !important;
+    padding: 2px 1px 8px !important;
+    overflow-x: auto !important;
+    overscroll-behavior-inline: contain !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  #app .scats::-webkit-scrollbar { display: none !important; }
+  #app .scats button { flex: 0 0 auto !important; min-height: 39px !important; padding: 8px 13px !important; border-radius: 999px !important; white-space: nowrap !important; }
+  #app .scripts { display: grid !important; grid-template-columns: minmax(0,1fr) !important; gap: 11px !important; }
+  #app .scard { padding: 15px !important; border-radius: 16px !important; }
+  #app .scard h4 { margin: 7px 0 !important; font-size: 1rem !important; line-height: 1.25 !important; }
+  #app .scard p { font-size: .87rem !important; line-height: 1.5 !important; }
+  #app .scard .row { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; }
+  #app .scard .row .btn { flex: 1 1 auto !important; }
+
+  /* Imóveis: foto em destaque, dados e métricas com hierarquia simples. */
+  #app .props { display: grid !important; grid-template-columns: minmax(0,1fr) !important; gap: 13px !important; }
+  #app .prop { overflow: hidden !important; padding: 0 !important; border-radius: 18px !important; }
+  #app .prop-media { display: block !important; position: relative !important; width: 100% !important; aspect-ratio: 16/10 !important; min-height: 0 !important; border: 0 !important; border-radius: 0 !important; overflow: hidden !important; }
+  #app .prop-image { display: block !important; width: 100% !important; height: 100% !important; object-fit: cover !important; object-position: center !important; }
+  #app .prop-placeholder { min-height: 100% !important; height: 100% !important; border-radius: 0 !important; }
+  #app .prop-photo-count { right: 12px !important; bottom: 12px !important; padding: 7px 10px !important; border-radius: 999px !important; font-size: .7rem !important; }
+  #app .prop-body { padding: 14px 15px 15px !important; }
+  #app .prop-meta-row { display: flex !important; flex-wrap: wrap !important; gap: 7px !important; margin-bottom: 9px !important; }
+  #app .prop-price-row { display: flex !important; flex-wrap: wrap !important; align-items: center !important; justify-content: space-between !important; gap: 8px !important; }
+  #app .prop-price-row .price { font-size: 1.35rem !important; line-height: 1.15 !important; }
+  #app .prop-open-label { font-size: .74rem !important; }
+  #app .prop .t { margin-top: 7px !important; font-size: 1rem !important; line-height: 1.25 !important; }
+  #app .prop .sub { margin-top: 5px !important; font-size: .78rem !important; }
+  #app .prop .stats { display: grid !important; grid-template-columns: repeat(3,minmax(0,1fr)) !important; gap: 6px !important; margin-top: 12px !important; padding-top: 11px !important; font-size: .7rem !important; }
+  #app .prop .stats span { min-width: 0 !important; overflow-wrap: anywhere !important; }
+  #app .prop .stats b { display: block !important; font-size: .94rem !important; line-height: 1.2 !important; }
+
+  /* Campanhas: filtros de anúncio como chips e lançamentos em cartões. */
+  #app .campaign-ads-filter {
+    display: grid !important;
+    grid-template-columns: auto minmax(0,1fr) !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  #app .campaign-ads-filter > .sub { white-space: nowrap !important; font-size: .75rem !important; }
+  #app .campaign-ads-filter > .seg { display: flex !important; min-width: 0 !important; width: 100% !important; gap: 4px !important; }
+  #app .campaign-ads-filter > .seg button { flex: 1 1 0 !important; min-width: 0 !important; padding: 8px 5px !important; font-size: .72rem !important; white-space: nowrap !important; }
+  #app:has(.campaign-ads-filter) .tablewrap {
+    width: 100% !important;
+    overflow: visible !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  #app:has(.campaign-ads-filter) .tablewrap table,
+  #app:has(.campaign-ads-filter) .tablewrap thead,
+  #app:has(.campaign-ads-filter) .tablewrap tbody,
+  #app:has(.campaign-ads-filter) .tablewrap tfoot { display: block !important; width: 100% !important; min-width: 0 !important; }
+  #app:has(.campaign-ads-filter) .tablewrap thead { display: none !important; }
+  #app:has(.campaign-ads-filter) .tablewrap tbody { display: grid !important; gap: 9px !important; }
+  #app:has(.campaign-ads-filter) .tablewrap tbody tr {
+    display: grid !important;
+    grid-template-columns: repeat(6,minmax(0,1fr)) !important;
+    align-items: start !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 9px 10px !important;
+    border: 1px solid var(--jm-glass-border) !important;
+    border-radius: 15px !important;
+    background: var(--jm-glass) !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,.08) !important;
+  }
+  #app:has(.campaign-ads-filter) .tablewrap tbody td {
+    display: block !important;
+    min-width: 0 !important;
+    padding: 6px 5px !important;
+    border: 0 !important;
+    background: transparent !important;
+    font-size: .76rem !important;
+    line-height: 1.32 !important;
+    overflow-wrap: anywhere !important;
+  }
+  #app:has(.campaign-ads-filter) .tablewrap tbody td::before {
+    display: block !important;
+    margin-bottom: 3px !important;
+    color: var(--muted) !important;
+    font-size: .57rem !important;
+    font-weight: 800 !important;
+    letter-spacing: .07em !important;
+    text-transform: uppercase !important;
+  }
+  #app:has(.campaign-ads-filter) .tablewrap tbody td:nth-child(1) { grid-column: span 3 !important; }
+  #app:has(.campaign-ads-filter) .tablewrap tbody td:nth-child(1)::before { content: "Período" !important; }
+  #app:has(.campaign-ads-filter) .tablewrap tbody td:nth-child(2) { grid-column: span 3 !important; }
+  #app:has(.campaign-ads-filter) .tablewrap tbody td:nth-child(2)::before { content: "Imóvel" !important; }
+  #app:has(.campaign-ads-filter) .tablewrap tbody td:nth-child(3) { grid-column: 1/-1 !important; }
+  #app:has(.campaign-ads-filter) .tablewrap tbody td:nth-child(3)::before { content: "Campanha / anúncio" !important; }
+  #app:has(.campaign-ads-filter) .tablewrap tbody td:nth-child(n+4) { grid-column: span 2 !important; }
+  #app:has(.campaign-ads-filter) .tablewrap tbody td:nth-child(4)::before { content: "Gasto" !important; }
+  #app:has(.campaign-ads-filter) .tablewrap tbody td:nth-child(5)::before { content: "Leads" !important; }
+  #app:has(.campaign-ads-filter) .tablewrap tbody td:nth-child(6)::before { content: "Custo/lead" !important; }
+  #app:has(.campaign-ads-filter) .tablewrap tfoot { margin-top: 8px !important; }
+  #app:has(.campaign-ads-filter) .tablewrap tfoot tr { display: flex !important; flex-wrap: wrap !important; justify-content: space-between !important; gap: 5px 12px !important; padding: 12px !important; border: 1px solid var(--accent-line) !important; border-radius: 13px !important; background: var(--accent-soft) !important; }
+  #app:has(.campaign-ads-filter) .tablewrap tfoot td { padding: 0 !important; border: 0 !important; font-size: .75rem !important; }
+
+  /* No dashboard, desempenho por imóvel também vira lista de cartões. */
+  #app:has(.painel-banner) .tablewrap { overflow: visible !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
+  #app:has(.painel-banner) .tablewrap table,
+  #app:has(.painel-banner) .tablewrap thead,
+  #app:has(.painel-banner) .tablewrap tbody { display: block !important; width: 100% !important; min-width: 0 !important; }
+  #app:has(.painel-banner) .tablewrap thead { display: none !important; }
+  #app:has(.painel-banner) .tablewrap tbody { display: grid !important; gap: 9px !important; }
+  #app:has(.painel-banner) .tablewrap tbody tr {
+    display: grid !important;
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+    width: 100% !important;
+    padding: 10px !important;
+    border: 1px solid var(--jm-glass-border) !important;
+    border-radius: 14px !important;
+    background: var(--jm-glass) !important;
+  }
+  #app:has(.painel-banner) .tablewrap tbody td {
+    display: block !important;
+    min-width: 0 !important;
+    padding: 7px 6px !important;
+    border: 0 !important;
+    font-size: .73rem !important;
+    overflow-wrap: anywhere !important;
+  }
+  #app:has(.painel-banner) .tablewrap tbody td::before {
+    display: block !important;
+    margin-bottom: 3px !important;
+    color: var(--muted) !important;
+    font-size: .56rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+  }
+  #app:has(.painel-banner) .tablewrap tbody td:nth-child(1) { grid-column: 1/-1 !important; font-weight: 800 !important; font-size: .86rem !important; }
+  #app:has(.painel-banner) .tablewrap tbody td:nth-child(1)::before { content: "Imóvel" !important; }
+  #app:has(.painel-banner) .tablewrap tbody td:nth-child(2)::before { content: "Valor" !important; }
+  #app:has(.painel-banner) .tablewrap tbody td:nth-child(3)::before { content: "Gasto" !important; }
+  #app:has(.painel-banner) .tablewrap tbody td:nth-child(4)::before { content: "Leads Meta" !important; }
+  #app:has(.painel-banner) .tablewrap tbody td:nth-child(5)::before { content: "Custo/lead" !important; }
+  #app:has(.painel-banner) .tablewrap tbody td:nth-child(6)::before { content: "No CRM" !important; }
+  #app:has(.painel-banner) .tablewrap tbody td:nth-child(7)::before { content: "Qualificados" !important; }
+  #app:has(.painel-banner) .tablewrap tbody td:nth-child(8)::before { content: "Visitas" !important; }
+  #app:has(.painel-banner) .tablewrap tbody td:nth-child(9)::before { content: "Vendas" !important; }
+
+  /* WhatsApp: lista simples; chat ocupa a área disponível, em tela própria. */
+  #app .wa-page-head { display: flex !important; flex-wrap: wrap !important; align-items: center !important; gap: 8px !important; margin: 0 0 11px !important; }
+  #app .wa-page-head h2 { flex: 1 1 auto !important; margin: 0 !important; font-size: 1.1rem !important; line-height: 1.22 !important; }
+  #app .wa-page-head .btn { flex: 0 0 auto !important; }
+  #app .wa-shell {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    border-radius: 17px !important;
+  }
+  #app .wa-list, #app .wa-chat {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+  #app .wa-shell:not(.wa-mobile-chat-open) .wa-list { display: block !important; }
+  #app .wa-shell:not(.wa-mobile-chat-open) .wa-chat { display: none !important; }
+  #app .wa-shell.wa-mobile-chat-open .wa-list { display: none !important; }
+  #app .wa-shell.wa-mobile-chat-open .wa-chat {
+    display: flex !important;
+    flex-direction: column !important;
+    height: calc(100dvh - var(--jm-mobile-header-h) - var(--jm-mobile-workbar-h) - var(--jm-mobile-nav-h) - var(--top) - var(--bot) - 18px) !important;
+    min-height: 340px !important;
+    max-height: none !important;
+  }
+  #app .wa-list-head { display: flex !important; flex-direction: column !important; align-items: stretch !important; gap: 9px !important; padding: 15px !important; }
+  #app .wa-list-head h2 { margin: 0 !important; font-size: 1.05rem !important; }
+  #app .wa-search { width: 100% !important; min-height: 46px !important; padding: 12px 14px !important; border-radius: 12px !important; }
+  #app #waConvList { max-height: calc(100dvh - 250px) !important; overflow-y: auto !important; overscroll-behavior: contain !important; padding: 8px !important; }
+  #app .wa-conv { width: 100% !important; margin: 5px 0 !important; padding: 13px !important; border-radius: 14px !important; white-space: normal !important; overflow-wrap: anywhere !important; }
+  #app .wa-conv b { font-size: .92rem !important; line-height: 1.28 !important; }
+  #app .wa-conv small { font-size: .73rem !important; line-height: 1.34 !important; }
+  #app .wa-chat-head { display: grid !important; grid-template-columns: auto minmax(0,1fr) !important; gap: 8px !important; align-items: center !important; padding: 10px 12px !important; }
+  #app .wa-chat-head .wa-contact-block { grid-column: 1/-1 !important; grid-row: 2 !important; min-width: 0 !important; overflow-wrap: anywhere !important; }
+  #app .wa-chat-head .wa-contact-block h2 { margin: 0 !important; font-size: .98rem !important; }
+  #app .wa-chat-head .spacer { display: none !important; }
+  #app .wa-chat-head #waOpenLead, #app .wa-chat-head #waResume, #app .wa-chat-head #waPause { min-width: 0 !important; max-width: 100% !important; padding: 8px 9px !important; font-size: .69rem !important; white-space: normal !important; }
+  #app .wa-chat-head #waOpenLead { grid-column: 1 !important; }
+  #app .wa-chat-head #waResume { grid-column: 2 !important; }
+  #app .wa-chat-head #waPause { grid-column: 1/-1 !important; justify-self: start !important; }
+  #app .wa-messages { flex: 1 1 auto !important; min-height: 100px !important; max-height: none !important; height: auto !important; overflow-y: auto !important; overscroll-behavior: contain !important; padding: 13px 11px !important; gap: 9px !important; }
+  #app .wa-msg { max-width: 88% !important; padding: 10px 12px !important; font-size: .87rem !important; line-height: 1.43 !important; overflow-wrap: anywhere !important; }
+  #app .wa-compose { display: flex !important; align-items: flex-end !important; gap: 7px !important; padding: 9px !important; flex: 0 0 auto !important; }
+  #app .wa-compose textarea { flex: 1 1 auto !important; min-width: 0 !important; width: 100% !important; min-height: 46px !important; max-height: 105px !important; padding: 12px 13px !important; font-size: 16px !important; }
+  #app .wa-compose button { flex: 0 0 auto !important; min-height: 44px !important; padding: 9px 12px !important; }
+  #app .wa-note { flex: 0 0 auto !important; padding: 8px 10px !important; font-size: .67rem !important; line-height: 1.35 !important; }
+  #app .wa-back-mobile { min-height: 39px !important; padding: 8px 11px !important; white-space: nowrap !important; }
+
+  /* Formulários em tela cheia: padrão de app, conteúdo com margem e rodapé fixo. */
+  dialog#dlg {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+    background: var(--bg) !important;
+    box-shadow: none !important;
+  }
+  #dlg .dlg {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+    border-radius: 0 !important;
+    background: var(--surface) !important;
+  }
+  #dlg .dlg > header {
+    position: relative !important;
+    flex: 0 0 auto !important;
+    min-height: 62px !important;
+    padding: calc(12px + var(--top)) 17px 12px !important;
+    background: var(--jm-glass-strong) !important;
+    border-bottom: 1px solid var(--jm-glass-border) !important;
+  }
+  #dlg .dlg header h3 { font-size: 1.15rem !important; }
+  #dlg .dtabs {
+    position: relative !important;
+    flex: 0 0 auto !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    padding: 10px 14px !important;
+    overflow-x: auto !important;
+    overscroll-behavior-inline: contain !important;
+    background: var(--surface) !important;
+  }
+  #dlg .dtabs button { flex: 0 0 auto !important; min-height: 37px !important; padding: 8px 12px !important; border-radius: 999px !important; }
+  #dlg .dlg .body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    padding: 19px 17px 26px !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  #dlg .body > .pane { display: grid !important; grid-template-columns: minmax(0,1fr) !important; gap: 15px !important; width: 100% !important; margin: 0 !important; padding: 3px 2px 12px !important; }
+  #dlg .pane > *, #dlg .pane .f { width: 100% !important; min-width: 0 !important; max-width: 100% !important; }
+  #dlg .pane .full { grid-column: 1 !important; }
+  #dlg .pane .f { display: flex !important; flex-direction: column !important; gap: 8px !important; }
+  #dlg .pane .f label, #dlg .pane .flabel { display: block !important; margin: 0 0 2px !important; padding: 0 3px !important; font-size: .8rem !important; line-height: 1.35 !important; }
+  #dlg .pane input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+  #dlg .pane select, #dlg .pane textarea {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 51px !important;
+    padding: 14px 16px !important;
+    border-radius: 13px !important;
+    box-sizing: border-box !important;
+    font-size: 16px !important;
+    line-height: 1.45 !important;
+  }
+  #dlg .pane textarea { min-height: 122px !important; padding: 15px 16px !important; }
+  #dlg .dlg footer {
+    position: relative !important;
+    flex: 0 0 auto !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 9px !important;
+    padding: 12px 16px calc(12px + var(--bot)) !important;
+    background: var(--jm-glass-strong) !important;
+    border-top: 1px solid var(--jm-glass-border) !important;
+  }
+  #dlg .dlg footer .btn { min-width: 104px !important; min-height: 46px !important; }
+
+  /* WhatsApp em duas telas: lista primeiro; conversa ocupa o espaço até a navegação. */
+  #app:has(.wa-shell.wa-mobile-chat-open) > .row:has(#waRefresh) { display: none !important; }
+  #app .wa-shell.wa-mobile-chat-open {
+    height: calc(100dvh - var(--jm-mobile-header-h) - var(--jm-mobile-workbar-h) - var(--jm-mobile-nav-h) - var(--top) - var(--bot) - 18px) !important;
+    min-height: 420px !important;
+    max-height: none !important;
+    margin-top: 0 !important;
+    border-radius: 18px !important;
+  }
+  #app .wa-shell.wa-mobile-chat-open .wa-chat {
+    display: flex !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    border-radius: 17px !important;
+  }
+  #app .wa-chat-head {
+    grid-template-columns: minmax(0,1fr) auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+  }
+  #app .wa-chat-head .wa-back-mobile {
+    grid-column: 1/-1 !important;
+    justify-self: start !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    min-height: 38px !important;
+    padding: 7px 11px !important;
+    border-radius: 999px !important;
+    color: var(--accent) !important;
+    background: var(--accent-soft) !important;
+    border: 1px solid var(--accent-line) !important;
+  }
+  #app .wa-chat-head .wa-contact-block {
+    grid-column: 1/-1 !important;
+    grid-row: auto !important;
+    min-width: 0 !important;
+    overflow-wrap: anywhere !important;
+  }
+  #app .wa-chat-head .wa-contact-block h2 { font-size: 1rem !important; line-height: 1.2 !important; }
+  #app .wa-chat-head #waOpenLead, #app .wa-chat-head #waResume, #app .wa-chat-head #waPause {
+    min-width: 0 !important;
+    padding: 8px 9px !important;
+    font-size: .69rem !important;
+    white-space: normal !important;
+  }
+  #app .wa-messages { flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important; }
+  #app .wa-compose { padding-bottom: calc(9px + var(--bot)) !important; }
+
+  /* Ajustes e estados vazios usam toda a largura útil, sem encostar nas bordas. */
+  #app .settings { display: grid !important; grid-template-columns: minmax(0,1fr) !important; gap: 10px !important; }
+  #app .settings > div { padding: 15px !important; }
+  #app .empty { padding: 21px 16px !important; text-align: center !important; }
+  #app .empty .btn { max-width: 100% !important; white-space: normal !important; }
+
+  /* Entrada confortável, animações leves e suporte a telas com notch. */
+  #app input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+  #app select, #app textarea {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 12px 14px !important;
+    font-size: 16px !important;
+    line-height: 1.42 !important;
+    border-radius: 12px !important;
+  }
+  #app textarea { min-height: 100px !important; padding: 14px 15px !important; }
+  #app .kpi, #app .panel, #app .lead, #app .scard, #app .prop, #app .venda, #app .pessoa,
+  #app .wa-conv, #app .btn, nav.tabs .tab { transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease !important; }
+  #app .btn:active, #app .prop:active, #app .scard:active, #app .lead:active { transform: scale(.99) !important; }
+}
+
+@media (max-width: 380px) {
+  /* Ajuste fino para aparelhos estreitos. */
+  .top .wrap { padding-inline: 11px !important; }
+  .brand { gap: 7px !important; }
+  img.mono { width: 36px !important; height: 36px !important; flex-basis: 36px !important; }
+  .brand h1 { font-size: .92rem !important; }
+  .brand .role { font-size: .47rem !important; letter-spacing: .07em !important; }
+  .jm-workbar { padding-inline: 11px !important; }
+  .jm-breadcrumb { display: none !important; }
+  .jm-workbar-titles strong { font-size: .88rem !important; }
+  main#app.wrap { padding-inline: 11px !important; }
+  #app .period-date-row { grid-template-columns: 58px minmax(0,1fr) 4px minmax(0,1fr) auto !important; gap: 3px !important; }
+  #app .period-date-title { font-size: .61rem !important; }
+  #app .period-date-input { font-size: .64rem !important; padding-inline: 4px !important; }
+  #app .period-date-row > [data-periodo-aplicar] { min-width: 48px !important; padding-inline: 5px !important; font-size: .67rem !important; }
+  #app .kpi { padding: 10px !important; }
+  #app .kpi .v { font-size: 1.04rem !important; }
+  nav.tabs .tab { font-size: .53rem !important; }
+  nav.tabs .tab svg { width: 19px !important; height: 19px !important; }
+  #dlg .dlg .body { padding-inline: 14px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 760px) {
+  #app *, #app *::before, #app *::after,
+  nav.tabs *, #fab, #dlg * {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
 </body>
 </html>
