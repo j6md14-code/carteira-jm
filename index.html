@@ -2062,7 +2062,7 @@ function vPainel(){
   if(!state.imoveis.length)h+='<div class="empty"><b>Nenhum imóvel cadastrado</b>Cadastre os imóveis anunciados para ver custo por lead e vendas de cada um.<br><button class="btn primary" type="button" data-act="novoImovel">Cadastrar imóvel</button></div>';
   else{
     const rows=state.imoveis.map(i=>{const mi=metricas(i.id);return'<tr class="click" data-edit-imovel="'+esc(i.id)+'"><td>'+esc(i.titulo)+'</td><td class="num">'+brl0(i.valor)+'</td><td class="num">'+brl(mi.gasto)+'</td><td class="num">'+mi.leadsMeta+'</td><td class="num">'+(isFinite(mi.cpl)?brl(mi.cpl):"—")+'</td><td class="num">'+mi.nLeads+'</td><td class="num">'+mi.qualif+'</td><td class="num">'+mi.visitas+'</td><td class="num">'+mi.vendas+'</td></tr>'}).join("");
-    h+='<div class="tablewrap"><table><thead><tr><th>Imóvel</th><th class="num">Valor</th><th class="num">Gasto</th><th class="num">Leads Meta</th><th class="num">Custo/lead</th><th class="num">No CRM</th><th class="num">Qualif.</th><th class="num">Visitas</th><th class="num">Vendas</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    h+='<div class="tablewrap property-performance"><table><thead><tr><th>Imóvel</th><th class="num">Valor</th><th class="num">Gasto</th><th class="num">Leads Meta</th><th class="num">Custo/lead</th><th class="num">No CRM</th><th class="num">Qualif.</th><th class="num">Visitas</th><th class="num">Vendas</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   }
   return h;
 }
@@ -2462,23 +2462,23 @@ function vGastos(){
 
       const c=g.leads?g.valor/g.leads:NaN;
 
-      return '<tr><td>'+periodoLinha+'</td><td>'+esc(nomeImovel)+'</td><td>'+esc(g.campanha||"—")+' <span class="chip stage" data-etapa="qualificando">Meta</span></td><td class="num">'+brl(g.valor)+'</td><td class="num">'+g.leads+'</td><td class="num">'+(isFinite(c)?brl(c):"—")+'</td></tr>';
+      return '<tr><td>'+periodoLinha+'</td><td>'+esc(nomeImovel)+'</td><td><span class="campaign-name">'+esc(g.campanha||"—")+'</span> <span class="chip stage campaign-platform" data-etapa="qualificando">Meta</span></td><td class="num">'+brl(g.valor)+'</td><td class="num">'+g.leads+'</td><td class="num">'+(isFinite(c)?brl(c):"—")+'</td></tr>';
     }
 
     const g=l.g;
     const c=Number(g.leads)?Number(g.valor)/Number(g.leads):NaN;
 
-    return '<tr class="click" data-edit-gasto="'+esc(g.id)+'"><td>'+fmtData(g.data)+'</td><td>'+esc(imovelNome(g.imovelId))+'</td><td>'+esc(g.campanha||"—")+'</td><td class="num">'+brl(g.valor)+'</td><td class="num">'+(Number(g.leads)||0)+'</td><td class="num">'+(isFinite(c)?brl(c):"—")+'</td></tr>';
+    return '<tr class="click" data-edit-gasto="'+esc(g.id)+'"><td>'+fmtData(g.data)+'</td><td>'+esc(imovelNome(g.imovelId))+'</td><td><span class="campaign-name">'+esc(g.campanha||"—")+'</span></td><td class="num">'+brl(g.valor)+'</td><td class="num">'+(Number(g.leads)||0)+'</td><td class="num">'+(isFinite(c)?brl(c):"—")+'</td></tr>';
   }).join("");
 
-  h+='<div class="tablewrap"><table><thead><tr><th>Data / período</th><th>Imóvel</th><th>Campanha / anúncio</th><th class="num">Gasto</th><th class="num">Leads</th><th class="num">Custo/lead</th></tr></thead><tbody>'+
+  h+='<div class="tablewrap campaign-records"><table><thead><tr><th>Data / período</th><th>Imóvel</th><th>Campanha / anúncio</th><th class="num">Gasto</th><th class="num">Leads</th><th class="num">Custo/lead</th></tr></thead><tbody>'+
     linhasHtml+
     '</tbody><tfoot><tr><td colspan="3">Total do período</td><td class="num">'+brl(tot)+'</td><td class="num">'+tl+'</td><td class="num">'+(tl?brl(tot/tl):"—")+'</td></tr></tfoot></table></div>';
 
   const porCamp={}; gs.forEach(g=>{const k=g.campanha||"Sem nome";porCamp[k]=porCamp[k]||{v:0,l:0};porCamp[k].v+=Number(g.valor)||0;porCamp[k].l+=Number(g.leads)||0});
 
-  h+='<h2 class="sec">Comparar campanhas e criativos</h2><div class="tablewrap"><table><thead><tr><th>Campanha / anúncio</th><th class="num">Gasto</th><th class="num">Leads</th><th class="num">Custo/lead</th></tr></thead><tbody>'+
-    Object.entries(porCamp).sort((a,b)=>(a[1].l?a[1].v/a[1].l:1e9)-(b[1].l?b[1].v/b[1].l:1e9)).map(([k,o])=>'<tr><td>'+esc(k)+'</td><td class="num">'+brl(o.v)+'</td><td class="num">'+o.l+'</td><td class="num">'+(o.l?brl(o.v/o.l):"—")+'</td></tr>').join("")+'</tbody></table></div>';
+  h+='<h2 class="sec">Comparar campanhas e criativos</h2><div class="tablewrap campaign-compare"><table><thead><tr><th>Campanha / anúncio</th><th class="num">Gasto</th><th class="num">Leads</th><th class="num">Custo/lead</th></tr></thead><tbody>'+
+    Object.entries(porCamp).sort((a,b)=>(a[1].l?a[1].v/a[1].l:1e9)-(b[1].l?b[1].v/b[1].l:1e9)).map(([k,o])=>'<tr><td><span class="campaign-name">'+esc(k)+'</span></td><td class="num">'+brl(o.v)+'</td><td class="num">'+o.l+'</td><td class="num">'+(o.l?brl(o.v/o.l):"—")+'</td></tr>').join("")+'</tbody></table></div>';
 
   return h;
 }
@@ -4260,5 +4260,125 @@ html[data-theme="light"] #app .wa-conv small { color:#625d54!important; }
 })();
 
 </script>
+
+
+<style id="jm-mobile-campaigns-polished">
+/* Ajuste exclusivo de apresentação mobile para Campanhas e desempenho por imóvel.
+   O desktop mantém sua tabela original. */
+@media (max-width:760px){
+  /* A lista de campanhas vira cartões sem texto cortado nem selo ocupando a linha. */
+  #app .campaign-records,
+  #app .campaign-compare,
+  #app .property-performance{
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    overflow:visible!important;padding:0!important;border:0!important;
+    background:transparent!important;box-shadow:none!important;
+  }
+  #app .campaign-records table,
+  #app .campaign-compare table,
+  #app .property-performance table{
+    display:block!important;width:100%!important;min-width:0!important;
+    border-collapse:separate!important;border-spacing:0!important;
+    table-layout:fixed!important;
+  }
+  #app .campaign-records thead,
+  #app .campaign-compare thead,
+  #app .property-performance thead{display:none!important}
+  #app .campaign-records tbody,
+  #app .campaign-compare tbody,
+  #app .property-performance tbody{
+    display:grid!important;gap:11px!important;width:100%!important;
+  }
+  #app .campaign-records tbody tr,
+  #app .campaign-compare tbody tr,
+  #app .property-performance tbody tr{
+    display:grid!important;min-width:0!important;width:100%!important;
+    padding:14px 15px!important;gap:0 12px!important;
+    border:1px solid var(--jm-glass-border)!important;
+    border-radius:17px!important;background:var(--jm-glass)!important;
+    box-shadow:var(--shadow)!important;
+  }
+  #app .campaign-records tbody tr{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+  #app .campaign-records tbody td,
+  #app .campaign-compare tbody td,
+  #app .property-performance tbody td{
+    display:flex!important;flex-direction:column!important;align-items:flex-start!important;
+    justify-content:flex-start!important;min-width:0!important;max-width:100%!important;
+    padding:7px 0!important;border:0!important;text-align:left!important;
+    font-size:.83rem!important;line-height:1.38!important;
+    white-space:normal!important;overflow:visible!important;
+    overflow-wrap:anywhere!important;word-break:normal!important;
+    color:var(--ink)!important;
+  }
+  #app .campaign-records tbody td::before,
+  #app .campaign-compare tbody td::before,
+  #app .property-performance tbody td::before{
+    display:block!important;margin:0 0 4px!important;
+    font-size:.62rem!important;line-height:1.2!important;
+    letter-spacing:.075em!important;text-transform:uppercase!important;
+    font-weight:850!important;color:var(--muted)!important;
+    white-space:normal!important;
+  }
+  /* Campanhas: período + imóvel; anúncio em bloco próprio; três métricas alinhadas. */
+  #app .campaign-records tbody td:nth-child(1){grid-column:span 3!important}
+  #app .campaign-records tbody td:nth-child(2){grid-column:span 3!important}
+  #app .campaign-records tbody td:nth-child(3){grid-column:1/-1!important;padding-top:10px!important;padding-bottom:10px!important}
+  #app .campaign-records tbody td:nth-child(4),
+  #app .campaign-records tbody td:nth-child(5),
+  #app .campaign-records tbody td:nth-child(6){grid-column:span 2!important;margin-top:5px!important;padding-top:10px!important;border-top:1px solid var(--jm-glass-border)!important}
+  #app .campaign-records tbody td:nth-child(1)::before{content:"Período"!important}
+  #app .campaign-records tbody td:nth-child(2)::before{content:"Imóvel"!important}
+  #app .campaign-records tbody td:nth-child(3)::before{content:"Campanha / anúncio"!important}
+  #app .campaign-records tbody td:nth-child(4)::before{content:"Gasto"!important}
+  #app .campaign-records tbody td:nth-child(5)::before{content:"Leads"!important}
+  #app .campaign-records tbody td:nth-child(6)::before{content:"Custo por lead"!important}
+  #app .campaign-records .campaign-name{
+    display:block!important;width:100%!important;max-width:100%!important;
+    white-space:normal!important;overflow-wrap:anywhere!important;word-break:break-word!important;
+    line-height:1.4!important;font-weight:650!important;
+  }
+  #app .campaign-records .campaign-platform{
+    display:inline-flex!important;align-self:flex-start!important;align-items:center!important;
+    width:auto!important;max-width:max-content!important;flex:0 0 auto!important;
+    margin:7px 0 0!important;padding:4px 10px!important;border-radius:999px!important;
+    font-size:.68rem!important;line-height:1.1!important;white-space:nowrap!important;
+  }
+  #app .campaign-records tfoot{display:block!important;margin-top:10px!important}
+  #app .campaign-records tfoot tr{
+    display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:6px!important;padding:13px!important;border:1px solid var(--accent-line)!important;
+    border-radius:15px!important;background:var(--accent-soft)!important;
+  }
+  #app .campaign-records tfoot td{display:block!important;min-width:0!important;padding:4px!important;border:0!important;font-size:.75rem!important;overflow-wrap:anywhere!important}
+  #app .campaign-records tfoot td:first-child{grid-column:1/-1!important;font-weight:850!important;border-bottom:1px solid var(--accent-line)!important;padding-bottom:9px!important}
+
+  /* Comparação de criativos: nome em cima, métricas em três colunas. */
+  #app .campaign-compare tbody tr{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  #app .campaign-compare tbody td:nth-child(1){grid-column:1/-1!important;padding-bottom:10px!important}
+  #app .campaign-compare tbody td:nth-child(2),
+  #app .campaign-compare tbody td:nth-child(3),
+  #app .campaign-compare tbody td:nth-child(4){grid-column:span 1!important;border-top:1px solid var(--jm-glass-border)!important;padding-top:10px!important}
+  #app .campaign-compare tbody td:nth-child(1)::before{content:"Campanha / anúncio"!important}
+  #app .campaign-compare tbody td:nth-child(2)::before{content:"Gasto"!important}
+  #app .campaign-compare tbody td:nth-child(3)::before{content:"Leads"!important}
+  #app .campaign-compare tbody td:nth-child(4)::before{content:"Custo por lead"!important}
+  #app .campaign-compare .campaign-name{display:block!important;width:100%!important;overflow-wrap:anywhere!important;line-height:1.4!important;font-weight:700!important}
+
+  /* Painel: tabela por imóvel recebe os rótulos corretos, em vez dos de campanhas. */
+  #app .property-performance tbody tr{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #app .property-performance tbody td:nth-child(1){grid-column:1/-1!important;padding-bottom:10px!important}
+  #app .property-performance tbody td:nth-child(n+2){grid-column:span 1!important;border-top:1px solid var(--jm-glass-border)!important;padding-top:9px!important}
+  #app .property-performance tbody td:nth-child(1)::before{content:"Imóvel"!important}
+  #app .property-performance tbody td:nth-child(2)::before{content:"Valor"!important}
+  #app .property-performance tbody td:nth-child(3)::before{content:"Gasto"!important}
+  #app .property-performance tbody td:nth-child(4)::before{content:"Leads Meta"!important}
+  #app .property-performance tbody td:nth-child(5)::before{content:"Custo por lead"!important}
+  #app .property-performance tbody td:nth-child(6)::before{content:"Leads no CRM"!important}
+  #app .property-performance tbody td:nth-child(7)::before{content:"Qualificados"!important}
+  #app .property-performance tbody td:nth-child(8)::before{content:"Visitas"!important}
+  #app .property-performance tbody td:nth-child(9)::before{content:"Vendas"!important}
+}
+</style>
+
 </body>
 </html>
