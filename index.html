@@ -487,6 +487,14 @@ dialog::backdrop{background:rgba(0,0,0,.72)}
 .f input,.f select,.f textarea,.addnote select,.addnote input,.sugg textarea{
   background:#100F0D;border:1px solid #51432D;color:#F4EBDD;color-scheme:dark
 }
+.f select option,.addnote select option{
+  background:#171411;
+  color:#F4EBDD;
+}
+.f select option:checked,.addnote select option:checked{
+  background:#DDAF42;
+  color:#17110A;
+}
 .f input:focus,.f select:focus,.f textarea:focus,.addnote select:focus,.addnote input:focus,.sugg textarea:focus{border-color:#DDAF42;outline:none;box-shadow:0 0 0 3px rgba(221,175,66,.14)}
 .picks button,.tempPick button{background:#211D17;border-color:#55452C;color:#D1C4AE}
 .picks button[aria-pressed="true"]{background:#3A2D17;border-color:#A98235;color:#F0C65B}
