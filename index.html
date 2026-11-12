@@ -2095,7 +2095,7 @@ function filtrarLeads(){
 }
 function vLeads(){
   const list=filtrarLeads(); const t=hoje();
-  let h='<div class="row" style="margin-bottom:12px"><h2 class="sec" style="margin:0">Leads <span class="sub">('+list.length+' de '+state.leads.length+')</span></h2><span class="spacer"></span><button class="btn sm" type="button" data-act="exportar">Exportar CSV</button></div>';
+  let h='<div class="row" style="margin-bottom:12px"><h2 class="sec" style="margin:0">Leads <span class="sub">('+list.length+' de '+state.leads.length+')</span></h2><span class="spacer"></span><button class="btn sm primary" type="button" data-act="importarLeads">Importar leads</button><button class="btn sm" type="button" data-act="exportar">Exportar CSV</button></div>';
   h+='<div class="filters"><input id="fBusca" type="search" placeholder="Buscar nome, telefone, bairro, anotação" value="'+esc(fBusca)+'" enterkeyhint="search">'+
     '<div class="seg lead-temp-filter" role="group" aria-label="Temperatura">'+
       '<div class="lead-temp-main">'+TEMPS.map(x=>'<button type="button" data-ftemp="'+x[0]+'" aria-pressed="'+(fTemp===x[0])+'">'+x[1]+'</button>').join("")+'</div>'+
@@ -2572,8 +2572,95 @@ function armar(btn,texto,fn){
   const orig=btn.textContent;btn.dataset.armed="1";btn.classList.add("armed");btn.textContent=texto;
   setTimeout(()=>{if(btn.isConnected&&btn.dataset.armed){delete btn.dataset.armed;btn.classList.remove("armed");btn.textContent=orig}},4000);
 }
+
+/* ---------- Importação em massa de leads (JSON ou CSV/TSV) ---------- */
+function abrirImportadorLeads(){
+  let dlgImp=document.getElementById("dlgImportarLeads");
+  if(!dlgImp){
+    dlgImp=document.createElement("dialog");
+    dlgImp.id="dlgImportarLeads";
+    dlgImp.innerHTML=`<div class="dlg">
+      <header><h3>Importar leads em massa</h3><button class="btn sm" type="button" data-imp-close>Fechar</button></header>
+      <div class="body">
+        <p class="sub">Cole um array JSON ou uma tabela copiada do Excel/Google Sheets. Campos reconhecidos: nome, telefone, email, origem, tipoDesejado, finalidade, bairrosInteresse, quartos, faixaMin, faixaMax, pagamento, credito, prazo, motivoCompra, decisores, proximoPasso, proximoContato e obs.</p>
+        <div class="f"><label for="impLeadsTexto">Dados dos leads</label><textarea id="impLeadsTexto" style="min-height:230px" placeholder='[{"nome":"Maria","telefone":"(19) 99999-9999","tipoDesejado":"Casa","faixaMax":350000,"obs":"Procura casa com 3 quartos"}]'></textarea></div>
+        <div id="impLeadsPreview" class="panel" style="margin-top:12px" aria-live="polite">Cole os dados e clique em “Conferir importação”.</div>
+        <p class="hint">A conferência procura telefone igual já cadastrado. Se encontrar, atualiza o cadastro existente sem apagar os dados anteriores; se não encontrar, cria um novo lead. Nenhum imóvel será criado ou alterado.</p>
+      </div>
+      <footer><button class="btn" type="button" data-imp-close>Cancelar</button><span class="spacer"></span><button class="btn" type="button" id="impLeadsConferir">Conferir importação</button><button class="btn primary" type="button" id="impLeadsSalvar" disabled>Salvar leads</button></footer>
+    </div>`;
+    document.body.appendChild(dlgImp);
+    dlgImp.addEventListener("click",e=>{
+      if(e.target===dlgImp)dlgImp.close();
+      if(e.target.closest("[data-imp-close]"))dlgImp.close();
+    });
+    dlgImp.querySelector("#impLeadsConferir").onclick=()=>conferir();
+    dlgImp.querySelector("#impLeadsSalvar").onclick=()=>salvarImportacao();
+  }
+  let preparados=[];
+  const txt=dlgImp.querySelector("#impLeadsTexto"), preview=dlgImp.querySelector("#impLeadsPreview"), save=dlgImp.querySelector("#impLeadsSalvar");
+  txt.value=""; preview.textContent="Cole os dados e clique em “Conferir importação”."; save.disabled=true;
+  function parse(){
+    const raw=txt.value.trim(); if(!raw)throw new Error("Cole os dados antes de continuar.");
+    if(raw.startsWith("[")||raw.startsWith("{")){
+      const j=JSON.parse(raw); const arr=Array.isArray(j)?j:(Array.isArray(j.leads)?j.leads:null);
+      if(!arr)throw new Error("O JSON precisa ser uma lista de leads ou conter a propriedade leads.");
+      return arr;
+    }
+    const lines=raw.split(/\r?\n/).filter(x=>x.trim());
+    const sep=lines[0].includes("\t")?"\t":";";
+    const headers=lines.shift().split(sep).map(x=>x.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""));
+    const aliases={nome:"nome",telefone:"telefone",whatsapp:"telefone",email:"email",origem:"origem",imovel:"imovel",tipo:"tipoDesejado",tipodesejado:"tipoDesejado",finalidade:"finalidade",bairros:"bairrosInteresse",bairrosinteresse:"bairrosInteresse",quartos:"quartos",faixamin:"faixaMin",faixamax:"faixaMax",orcamento:"orcamento",pagamento:"pagamento",credito:"credito",prazo:"prazo",motivocompra:"motivoCompra",decisores:"decisores",proximopasso:"proximoPasso",proximocontato:"proximoContato",obs:"obs",observacoes:"obs",observacoesgerais:"obs"};
+    return lines.map(line=>{const vals=line.split(sep);const o={};headers.forEach((h,i)=>{const k=aliases[h]||h;if(k)o[k]=vals[i]??""});return o});
+  }
+  function normalizarLead(x){
+    if(!x||typeof x!=="object"||Array.isArray(x))throw new Error("Cada lead precisa ser um objeto.");
+    const r=Object.assign({},x);
+    r.nome=String(r.nome||"").trim();
+    if(!r.nome)throw new Error("Há um lead sem nome.");
+    r.telefone=String(r.telefone||"").trim();
+    r.temperatura=["quente","morno","frio"].includes(r.temperatura)?r.temperatura:"morno";
+    r.etapa=["novo","qualificando","qualificado","visita_agendada","visitou","proposta","fechado","perdido"].includes(r.etapa)?r.etapa:"novo";
+    r.origem=r.origem||"WhatsApp";
+    r.entrada=r.entrada||hoje();
+    r.notas=Array.isArray(r.notas)?r.notas:[];
+    return r;
+  }
+  function conferir(){
+    try{
+      const arr=parse().map(normalizarLead);
+      if(!arr.length)throw new Error("Nenhum lead encontrado.");
+      const seen=new Set(); let novos=0,atualizacoes=0,semTelefone=0;
+      preparados=arr.map((r)=>{
+        const tel=(r.telefone||"").replace(/\D/g,"");
+        if(tel&&seen.has(tel))throw new Error("O telefone "+r.telefone+" aparece mais de uma vez no conteúdo colado.");
+        if(tel)seen.add(tel); else semTelefone++;
+        const existente=tel?state.leads.find(l=>(l.telefone||"").replace(/\D/g,"")===tel):null;
+        if(existente)atualizacoes++;else novos++;
+        return {r,existente};
+      });
+      preview.innerHTML='<b>Prévia da importação</b><p>'+novos+' novos leads · '+atualizacoes+' cadastros que serão atualizados · '+semTelefone+' sem telefone para conferência manual.</p><ul>'+preparados.map(x=>'<li>'+esc(x.r.nome)+' — '+esc(x.r.telefone||"sem telefone")+' <span class="sub">('+ (x.existente?"atualizar":"novo") +')</span></li>').join("")+'</ul>';
+      save.disabled=false;
+    }catch(e){preparados=[];save.disabled=true;preview.textContent=e.message||"Não foi possível interpretar os dados."}
+  }
+  async function salvarImportacao(){
+    if(!preparados.length)return;
+    save.disabled=true; let ok=0;
+    try{
+      for(const item of preparados){
+        const r=item.r, old=item.existente;
+        const rec=old?Object.assign({},old,r,{id:old.id,notas:[...(old.notas||[]),...(r.notas||[])]}):r;
+        await salvar("leads",rec,{silencioso:true}); ok++;
+      }
+      dlgImp.close(); toast(ok+" lead(s) importado(s) com sucesso."); render();
+    }catch(e){toast("Importação interrompida após "+ok+" cadastro(s). Confira os leads salvos e tente novamente.");save.disabled=false}
+  }
+  dlgImp.showModal();
+}
+
 async function acao(a,btn){
-  if(a==="novoLead")abrirLead();
+  if(a==="importarLeads")abrirImportadorLeads();
+  else if(a==="novoLead")abrirLead();
   else if(a==="novoImovel")abrirImovel();
   else if(a==="novoGasto")abrirGasto();
   else if(a==="fRetorno"){fRetorno=!fRetorno;render()}
