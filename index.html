@@ -1633,6 +1633,7 @@ dialog#dlg{
 .ia-conversation{display:flex;flex-direction:column;min-height:650px}
 .ia-conversation-head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
 .ia-conversation-head>div{display:flex;flex-direction:column;gap:3px;min-width:0}.ia-conversation-head b{font-size:.96rem;overflow-wrap:anywhere}.ia-conversation-head small{font-size:.72rem;color:var(--muted)}
+.ia-conversation-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-left:auto}
 .ia-count{font-size:.7rem;color:var(--muted);border:1px solid var(--line);padding:4px 8px;border-radius:30px;white-space:nowrap}
 .ia-thread{flex:1;min-height:310px;max-height:58vh;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.012))}
 .ia-empty{margin:auto;text-align:center;color:var(--muted);font-size:.85rem;max-width:380px;line-height:1.5;padding:30px 18px}
@@ -1791,7 +1792,7 @@ let galeriaImoveisCache={}, galeriaImoveisCacheKey="", galeriaImoveisLoadingKey=
 let vPeriodo="ano";
 let view="painel", periodo="30", periodoInicio="", periodoFim="", fTemp="todos", fEtapa="ativos", fImovel="todos", fBusca="", fRetorno=false, fOrdem="quentes", fAnuncios="todos", scat="todos";
 let sb=null, sessao=null, canal=null, entrouId=null;
-const iaConversaState={leadId:"",incoming:"",images:[],busy:false,lastSuggestion:null,error:""};
+const iaConversaState={leadId:"",incoming:"",images:[],busy:false,lastSuggestion:null,currentOptions:[],error:""};
 const eu=()=>CORRETOR;
 const LOGOS={"pablo rodrigues":"logo-mark-pablo.png"};
 function aplicarMarca(){const h=document.getElementById("brandNome");if(h)h.textContent=CORRETOR;const im=document.querySelector("img.mono");if(im){const src=LOGOS[String(CORRETOR).toLowerCase()]||"logo-mark.png";if(im.getAttribute("src")!==src)im.setAttribute("src",src);im.alt="Logo "+CORRETOR}}
@@ -2043,7 +2044,12 @@ function vConversasIA(){
   const lead=leads.find(l=>l.id===iaConversaState.leadId)||null;
   const imovel=lead?state.imoveis.find(i=>String(i.id)===String(lead.imovelId)):null;
   const notes=lead&&Array.isArray(lead.notas)?lead.notas:[];
-  const chat=notes.filter(n=>n&&n.chatId&&["user","suggestion","sent"].includes(n.chatRole)).sort((a,b)=>new Date(a.d||0)-new Date(b.d||0));
+  // O botão Limpar chat inicia um novo contexto sem apagar o histórico comercial do cadastro.
+  const clearedAt=lead&&lead.chatClearBefore?new Date(lead.chatClearBefore).getTime():0;
+  const persistedChat=notes.filter(n=>n&&n.chatId&&["user","sent"].includes(n.chatRole)&&new Date(n.d||0).getTime()>clearedAt);
+  // As três opções geradas ficam apenas na tela. Só a opção realmente enviada vai para o histórico.
+  const liveOptions=lead&&String(iaConversaState.leadId)===String(lead.id)?iaConversaState.currentOptions:[];
+  const chat=[...persistedChat,...liveOptions].sort((a,b)=>new Date(a.d||0)-new Date(b.d||0));
   const bubbles=chat.map(n=>{
     const kind=n.chatRole==="user"?"in":n.chatRole==="sent"?"sent":"draft";
     const optionLabel=n.chatMeta&&n.chatMeta.optionLabel?String(n.chatMeta.optionLabel):"";
@@ -2058,7 +2064,7 @@ function vConversasIA(){
   const context=lead?'<div class="ia-context"><b>Contexto que a IA vai considerar</b><p>'+esc([lead.tipoDesejado,lead.finalidade,lead.bairrosInteresse,lead.faixaMin?'a partir de '+brl0(lead.faixaMin):'',lead.faixaMax?'até '+brl0(lead.faixaMax):'',lead.pagamento,lead.prazo].filter(Boolean).join(" · ")||"Ainda há poucas informações qualificadas; a IA evitará presumir dados.")+'</p></div>':'';
   const history=lead?(bubbles||'<div class="ia-empty">Nenhuma mensagem foi registrada nesta conversa. Cole abaixo a primeira mensagem ou anexe um print.</div>'):'<div class="ia-empty">Escolha um cliente para começar.</div>';
   const attachmentPreview=iaConversaState.images.map((img,index)=>'<div class="ia-attachment"><img src="'+esc(img.dataUrl)+'" alt="Prévia do print '+(index+1)+'"><div class="ia-attachment-info"><b>'+esc(img.name)+'</b><small>'+Math.max(1,Math.round(img.size/1024))+' KB</small></div><button class="btn sm" type="button" data-ia-remove-image="'+index+'" aria-label="Remover '+esc(img.name)+'">Remover</button></div>').join('');
-  return '<div class="ia-page"><div class="ia-page-head"><div><span class="ia-eyebrow">CARTEIRA JM · ASSISTENTE COMERCIAL</span><h2 class="sec">Conversas com IA</h2><p class="sub">Digite a mensagem, anexe prints da conversa ou use os dois. A IA analisa o cadastro, o imóvel e o contexto para criar três respostas humanizadas e indicar quais informações ainda precisam ser levantadas.</p></div><span class="ia-secure"><span></span>Resposta sugerida · envio sempre manual</span></div><div class="ia-layout"><aside class="ia-sidebar"><div class="ia-panel"><h3>Atendimento</h3>'+select+details+context+'</div><div class="ia-tip"><b>Como usar</b><ol><li>Selecione o cliente.</li><li>Digite a mensagem recebida e/ou anexe até 4 prints.</li><li>Compare as três opções, escolha a mais natural e revise.</li><li>Copie e envie pelo WhatsApp. Depois marque como enviada para manter o contexto correto.</li></ol></div></aside><section class="ia-conversation"><div class="ia-conversation-head"><div><b>'+(lead?esc(lead.nome):'Conversa')+'</b><small>Histórico deste cliente</small></div><span class="spacer"></span><span class="ia-count">'+chat.length+' registros</span></div><div class="ia-thread" id="iaThread">'+history+'</div>'+(lead?'<form class="ia-compose" id="iaChatForm"><label class="ia-label" for="iaIncoming">Mensagem recebida ou contexto adicional (opcional quando anexar prints)</label><textarea id="iaIncoming" maxlength="5000" placeholder="Digite ou cole aqui o que o cliente mandou no WhatsApp…">'+esc(iaConversaState.incoming)+'</textarea><div class="ia-attach-tools"><label class="btn sm" for="iaImages">＋ Anexar prints</label><input id="iaImages" type="file" accept="image/png,image/jpeg,image/webp" multiple><small>PNG, JPG ou WEBP · até 4 imagens · tamanho total até 6 MB.</small></div>'+(attachmentPreview?'<div class="ia-attachments">'+attachmentPreview+'</div>':'')+'<div class="ia-compose-foot"><small>Os prints são analisados pela IA. O arquivo original não é salvo no CRM; apenas o resumo extraído fica no histórico. Você revisa e envia manualmente.</small><button class="btn primary" type="submit" id="iaGenerate" '+(iaConversaState.busy?'disabled':'')+'>'+(iaConversaState.busy?'Analisando conversa…':'Gerar resposta')+'</button></div>'+(iaConversaState.error?'<p class="ia-error">'+esc(iaConversaState.error)+'</p>':'')+'</form>':'<div class="ia-compose ia-compose-disabled"><p>Selecione um cliente no painel ao lado para iniciar.</p></div>')+'</section></div><p class="ia-privacy-note">Para gerar a resposta, os dados comerciais relevantes do lead, o trecho recente da conversa e os prints selecionados serão enviados à API da OpenAI por uma função protegida no Supabase. Telefone e e-mail não são enviados.</p></div>';
+  return '<div class="ia-page"><div class="ia-page-head"><div><span class="ia-eyebrow">CARTEIRA JM · ASSISTENTE COMERCIAL</span><h2 class="sec">Conversas com IA</h2><p class="sub">Digite a mensagem, anexe prints da conversa ou use os dois. A IA analisa o cadastro, o imóvel e o contexto para criar três respostas humanizadas e indicar quais informações ainda precisam ser levantadas.</p></div><span class="ia-secure"><span></span>Resposta sugerida · envio sempre manual</span></div><div class="ia-layout"><aside class="ia-sidebar"><div class="ia-panel"><h3>Atendimento</h3>'+select+details+context+'</div><div class="ia-tip"><b>Como usar</b><ol><li>Selecione o cliente.</li><li>Digite a mensagem recebida e/ou anexe até 4 prints.</li><li>Compare as três opções, escolha a mais natural e revise.</li><li>Copie e envie pelo WhatsApp. Depois marque como enviada para manter o contexto correto.</li></ol></div></aside><section class="ia-conversation"><div class="ia-conversation-head"><div><b>'+(lead?esc(lead.nome):'Conversa')+'</b><small>'+(lead?'Mensagens deste atendimento':'Histórico deste cliente')+'</small></div><div class="ia-conversation-actions">'+(lead?'<button class="btn sm danger" type="button" id="iaClearChat" '+(iaConversaState.busy?'disabled':'')+' title="Limpar a conversa atual e iniciar um novo contexto">Limpar chat</button>':'')+'<span class="ia-count">'+chat.length+' registros</span></div></div><div class="ia-thread" id="iaThread">'+history+'</div>'+(lead?'<form class="ia-compose" id="iaChatForm"><label class="ia-label" for="iaIncoming">Mensagem recebida ou contexto adicional (opcional quando anexar prints)</label><textarea id="iaIncoming" maxlength="5000" placeholder="Digite ou cole aqui o que o cliente mandou no WhatsApp…">'+esc(iaConversaState.incoming)+'</textarea><div class="ia-attach-tools"><label class="btn sm" for="iaImages">＋ Anexar prints</label><input id="iaImages" type="file" accept="image/png,image/jpeg,image/webp" multiple><small>PNG, JPG ou WEBP · até 4 imagens · tamanho total até 6 MB.</small></div>'+(attachmentPreview?'<div class="ia-attachments">'+attachmentPreview+'</div>':'')+'<div class="ia-compose-foot"><small>Os prints são analisados pela IA. O arquivo original não é salvo no CRM; apenas o resumo extraído fica no histórico. Você revisa e envia manualmente.</small><button class="btn primary" type="submit" id="iaGenerate" '+(iaConversaState.busy?'disabled':'')+'>'+(iaConversaState.busy?'Analisando conversa…':'Gerar resposta')+'</button></div>'+(iaConversaState.error?'<p class="ia-error">'+esc(iaConversaState.error)+'</p>':'')+'</form>':'<div class="ia-compose ia-compose-disabled"><p>Selecione um cliente no painel ao lado para iniciar.</p></div>')+'</section></div><p class="ia-privacy-note">Para gerar a resposta, os dados comerciais relevantes do lead, o trecho recente da conversa e os prints selecionados serão enviados à API da OpenAI por uma função protegida no Supabase. Telefone e e-mail não são enviados.</p></div>';
 }
 
 function contextoLeadParaIA(lead){
@@ -2094,7 +2100,12 @@ async function iaGerarResposta(leadId,incoming,images=[]){
   const lead=state.leads.find(l=>String(l.id)===String(leadId));
   if(!lead)throw new Error("Selecione um cliente válido.");
   if(!sessao)throw new Error("Sua sessão expirou. Entre novamente no CRM.");
-  const recent=(lead.notas||[]).filter(n=>n&&["user","sent"].includes(n.chatRole)).slice(0,16).reverse().map(n=>({role:n.chatRole==="user"?"user":"assistant",content:[String(n.t||""),n.chatImageContext?"Resumo dos prints anteriores: "+String(n.chatImageContext):""].filter(Boolean).join("\n\n")}));
+  const clearedAt=lead.chatClearBefore?new Date(lead.chatClearBefore).getTime():0;
+  const recent=(lead.notas||[])
+    .filter(n=>n&&["user","sent"].includes(n.chatRole)&&new Date(n.d||0).getTime()>clearedAt)
+    .sort((a,b)=>new Date(a.d||0)-new Date(b.d||0))
+    .slice(-16)
+    .map(n=>({role:n.chatRole==="user"?"user":"assistant",content:[String(n.t||""),n.chatImageContext?"Resumo dos prints anteriores: "+String(n.chatImageContext):""].filter(Boolean).join("\n\n")}));
   const imagePayload=(images||[]).map(img=>({name:img.name,mimeType:img.mimeType,dataUrl:img.dataUrl}));
   const {data,error}=await sb.functions.invoke("crm-chat",{body:{lead:contextoLeadParaIA(lead),history:recent,incoming,images:imagePayload}});
   if(error){let msg=error.message||"Falha ao chamar a função crm-chat.";try{const body=await error.context.json();if(body&&body.error)msg=body.error}catch(_){};throw new Error(msg)}
@@ -2109,7 +2120,7 @@ async function iaGerarResposta(leadId,incoming,images=[]){
   const drafts=suggestion.options.map((option,index)=>({
     chatId:uid(),chatGroupId:receivedId,chatOptionIndex:index+1,chatRole:"suggestion",
     d:new Date(Date.now()+index+1).toISOString(),t:String(option.message||""),tipo:"followup",
-    autor:"Sugestão IA (não enviada)",
+    autor:"Sugestão IA (temporária)",
     chatMeta:{
       optionLabel:String(option.label||("Opção "+(index+1))),
       rationale:String(option.rationale||""),
@@ -2120,8 +2131,9 @@ async function iaGerarResposta(leadId,incoming,images=[]){
     }
   }));
   if(drafts.some(d=>!d.t.trim()))throw new Error("Uma das três opções veio vazia. Gere novamente.");
-  const updated=Object.assign({},lead,{notas:[...drafts,received,...(lead.notas||[])]});
-  await salvar("leads",updated,{silencioso:true});
+  // Registra apenas a mensagem recebida e o resumo dos prints; os rascunhos não poluem o histórico.
+  await salvar("leads",Object.assign({},lead,{notas:[received,...(lead.notas||[])]}),{silencioso:true});
+  iaConversaState.currentOptions=drafts;
   iaConversaState.lastSuggestion={leadId,chatIds:drafts.map(d=>d.chatId),messages:drafts.map(d=>d.t)};
   iaConversaState.incoming="";
   iaConversaState.images=[];
@@ -2131,12 +2143,54 @@ async function iaGerarResposta(leadId,incoming,images=[]){
 async function iaMarcarComoEnviada(leadId,chatId){
   const lead=state.leads.find(l=>String(l.id)===String(leadId));
   if(!lead)return;
-  const notes=(lead.notas||[]).map(n=>n.chatId===chatId&&n.chatRole==="suggestion"?Object.assign({},n,{chatRole:"sent",autor:eu(),enviadoEm:new Date().toISOString()}):n);
-  if(notes.every((n,i)=>n===(lead.notas||[])[i])){toast("Essa sugestão não está mais pendente.");return}
+  const option=(iaConversaState.currentOptions||[]).find(n=>n.chatId===chatId);
+  let notes=[...(lead.notas||[])];
+  if(option){
+    // Só esta resposta escolhida vira histórico efetivamente enviado; as outras opções desaparecem.
+    const sentAt=new Date().toISOString();
+    const sent=Object.assign({},option,{chatRole:"sent",d:sentAt,autor:eu(),enviadoEm:sentAt,tipo:"whatsapp"});
+    notes=[sent,...notes];
+  }else{
+    // Compatibilidade com sugestões antigas que já tenham sido salvas por versões anteriores.
+    let found=false;
+    notes=notes.map(n=>{
+      if(n.chatId===chatId&&n.chatRole==="suggestion"){
+        found=true;
+        return Object.assign({},n,{chatRole:"sent",autor:eu(),enviadoEm:new Date().toISOString(),tipo:"whatsapp"});
+      }
+      return n;
+    });
+    if(!found){toast("Essa opção não está mais disponível. Gere uma nova resposta.");return}
+  }
   await salvar("leads",Object.assign({},lead,{notas,ultimoContato:hoje()}),{silencioso:true});
+  if(option)iaConversaState.currentOptions=[];
   iaConversaState.lastSuggestion=null;
   toast("Mensagem marcada como enviada no histórico.");
   render();
+}
+
+async function iaLimparChat(){
+  const lead=state.leads.find(l=>String(l.id)===String(iaConversaState.leadId));
+  if(!lead||iaConversaState.busy)return;
+  const ok=confirm(
+    "Limpar a conversa atual de "+(lead.nome||"este cliente")+"?\n\n"+
+    "As mensagens anteriores deixarão de aparecer nesta aba e de entrar no contexto das próximas respostas da IA.\n\n"+
+    "O histórico já registrado no cadastro será preservado; nada será apagado do CRM. As opções geradas que ainda não foram enviadas serão descartadas."
+  );
+  if(!ok)return;
+  const now=new Date().toISOString();
+  try{
+    // Remove apenas rascunhos antigos gerados pela IA; mensagens reais continuam preservadas no histórico do cadastro.
+    const preservedNotes=(lead.notas||[]).filter(n=>!(n&&n.chatRole==="suggestion"));
+    await salvar("leads",Object.assign({},lead,{chatClearBefore:now,notas:preservedNotes}),{silencioso:true});
+    iaConversaState.incoming="";
+    iaConversaState.images=[];
+    iaConversaState.currentOptions=[];
+    iaConversaState.lastSuggestion=null;
+    iaConversaState.error="";
+    toast("Chat limpo. O histórico do cadastro foi preservado.");
+    render();
+  }catch(e){toast("Não foi possível limpar o chat: "+(e.message||"erro"))}
 }
 
 /* ---------- Render ---------- */
@@ -2805,9 +2859,11 @@ function bindView(){
   app.querySelectorAll("[data-receber]").forEach(b=>b.onclick=async e=>{e.stopPropagation();const v=state.vendas.find(x=>x.id===b.dataset.receber);if(!v)return;const n=b.dataset.quem;const rec=Object.assign({},v.recebido||{});const em=Object.assign({},v.recebidoEm||{});rec[n]=!rec[n];em[n]=rec[n]?hoje():"";try{await salvar("vendas",Object.assign({},v,{recebido:rec,recebidoEm:em,alteradoPor:eu()}));toast(rec[n]?"Marcado como recebido":"Voltou para a receber")}catch(_){}});
   const iaThread=app.querySelector("#iaThread"); if(iaThread)iaThread.scrollTop=iaThread.scrollHeight;
   const iaLeadSelect=app.querySelector("#iaLeadSelect");
-  if(iaLeadSelect)iaLeadSelect.onchange=()=>{iaConversaState.leadId=iaLeadSelect.value;iaConversaState.incoming="";iaConversaState.images=[];iaConversaState.error="";iaConversaState.lastSuggestion=null;render()};
+  if(iaLeadSelect)iaLeadSelect.onchange=()=>{iaConversaState.leadId=iaLeadSelect.value;iaConversaState.incoming="";iaConversaState.images=[];iaConversaState.error="";iaConversaState.lastSuggestion=null;iaConversaState.currentOptions=[];render()};
   const iaOpenLead=app.querySelector("#iaOpenLead");
   if(iaOpenLead)iaOpenLead.onclick=()=>{if(iaConversaState.leadId)abrirLead(iaConversaState.leadId,"historico")};
+  const iaClearChat=app.querySelector("#iaClearChat");
+  if(iaClearChat)iaClearChat.onclick=iaLimparChat;
   const iaIncoming=app.querySelector("#iaIncoming");
   if(iaIncoming)iaIncoming.oninput=()=>{iaConversaState.incoming=iaIncoming.value};
   const iaImages=app.querySelector("#iaImages");
@@ -2840,14 +2896,15 @@ function bindView(){
     if(!iaConversaState.leadId){toast("Selecione um cliente primeiro.");return}
     if(!value&&!images.length){toast("Digite a mensagem recebida ou anexe pelo menos um print.");return}
     if(iaConversaState.busy)return;
-    iaConversaState.incoming=value;iaConversaState.busy=true;iaConversaState.error="";render();
+    iaConversaState.incoming=value;iaConversaState.currentOptions=[];iaConversaState.lastSuggestion=null;iaConversaState.busy=true;iaConversaState.error="";render();
     try{await iaGerarResposta(iaConversaState.leadId,value,images)}
     catch(err){iaConversaState.error=err&&err.message?err.message:"Não foi possível gerar a resposta.";iaConversaState.incoming=value}
     finally{iaConversaState.busy=false;render()}
   };
   app.querySelectorAll("[data-ia-copy-note]").forEach(b=>b.onclick=()=>{
     const lead=state.leads.find(l=>String(l.id)===String(iaConversaState.leadId));
-    const n=(lead&&lead.notas||[]).find(x=>x.chatId===b.dataset.iaCopyNote&&x.chatRole==="suggestion");
+    const n=(iaConversaState.currentOptions||[]).find(x=>x.chatId===b.dataset.iaCopyNote)
+      ||(lead&&lead.notas||[]).find(x=>x.chatId===b.dataset.iaCopyNote&&x.chatRole==="suggestion");
     if(n)copiar(n.t);
   });
   app.querySelectorAll("[data-ia-mark-note]").forEach(b=>b.onclick=async()=>{
