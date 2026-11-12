@@ -2618,7 +2618,7 @@ dlg.addEventListener("close",()=>render());
 /* ---------- Lead ---------- */
 function abrirLead(id,aba){
   const l=id?state.leads.find(x=>x.id===id):null;
-  const d=l?JSON.parse(JSON.stringify(l)):{temperatura:"morno",etapa:"novo",origem:"Meta Ads",entrada:hoje(),imovelId:(state.imoveis.find(i=>i.status!=="Vendido")||{}).id||"",notas:[]};
+  const d=l?JSON.parse(JSON.stringify(l)):{temperatura:"morno",etapa:"novo",origem:"Meta Ads",entrada:hoje(),imovelId:"",notas:[]};
   let temp=d.temperatura||"morno"; let notas=Array.isArray(d.notas)?d.notas.slice():[];
   const sc=pontuacao(d), nv=nivel(sc), cor=sc>=70?"var(--green)":sc>=40?"var(--accent)":"var(--slate)";
   const abas=[["resumo","Resumo"],["perfil","Perfil"],["interesse","Interesse"],["decisao","Decisão"],["esfriou","Esfriou"],["historico","Histórico ("+notas.length+")"]].concat(l?[["script","Script e follow-up"]]:[]);
@@ -2629,7 +2629,7 @@ function abrirLead(id,aba){
     F("lTel","WhatsApp (com DDD)",I("lTel",d.telefone,"tel",'inputmode="tel" placeholder="19 99999-9999"'))+
     '<div class="f full"><span class="flabel">Temperatura</span><div class="tempPick" role="group" aria-label="Temperatura">'+TEMPS.map(x=>'<button type="button" data-t="'+x[0]+'" aria-pressed="'+(temp===x[0])+'">'+x[1]+'</button>').join("")+'</div></div>'+
     F("lEtapa","Etapa",S("lEtapa",ETAPAS,d.etapa))+
-    F("lImovel","Imóvel de interesse",S("lImovel",state.imoveis.map(i=>[i.id,i.titulo]),d.imovelId,"Sem imóvel"))+
+    F("lImovel","Imóvel de interesse",S("lImovel",state.imoveis.filter(i=>i.status!=="Vendido").map(i=>[i.id,i.titulo]),d.imovelId,"Outro / sem imóvel específico"))+
     F("lOrigem","Origem",S("lOrigem",ORIGENS,d.origem))+
     F("lEntrada","Data de entrada",I("lEntrada",d.entrada,"date"))+
     F("lProx","Próximo contato",I("lProx",d.proximoContato,"date"))+
