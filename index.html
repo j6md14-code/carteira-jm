@@ -2624,23 +2624,38 @@ function abrirImportadorLeads(){
     r.origem=r.origem||"WhatsApp";
     r.entrada=r.entrada||hoje();
     r.notas=Array.isArray(r.notas)?r.notas:[];
-    return r;
+    const origemImovel=String(r.imovel||r.imovelOrigem||"").trim();
+    delete r.imovel; delete r.imovelOrigem;
+    let imovelVinculado="";
+    if(origemImovel){
+      const normalizarTexto=v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+      const alvo=normalizarTexto(origemImovel);
+      const encontrados=(state.imoveis||[]).filter(i=>{
+        const titulo=normalizarTexto(i.titulo);
+        return titulo===alvo || titulo.includes(alvo) || alvo.includes(titulo);
+      });
+      if(encontrados.length===1){r.imovelId=encontrados[0].id;imovelVinculado=encontrados[0].titulo||origemImovel;}
+      else {r.imovelId="";imovelVinculado="";}
+    }
+    return {lead:r,origemImovel,imovelVinculado};
   }
   function conferir(){
     try{
       const arr=parse().map(normalizarLead);
       if(!arr.length)throw new Error("Nenhum lead encontrado.");
       const seen=new Set(); let novos=0,atualizacoes=0,semTelefone=0;
-      preparados=arr.map((r)=>{
+      preparados=arr.map((item)=>{
+        const r=item.lead;
         const tel=(r.telefone||"").replace(/\D/g,"");
         if(tel&&seen.has(tel))throw new Error("O telefone "+r.telefone+" aparece mais de uma vez no conteúdo colado.");
         if(tel)seen.add(tel); else semTelefone++;
         const existente=tel?state.leads.find(l=>(l.telefone||"").replace(/\D/g,"")===tel):null;
         if(existente)atualizacoes++;else novos++;
-        return {r,existente};
+        return {r,existente,origemImovel:item.origemImovel,imovelVinculado:item.imovelVinculado};
       });
-      preview.innerHTML='<b>Prévia da importação</b><p>'+novos+' novos leads · '+atualizacoes+' cadastros que serão atualizados · '+semTelefone+' sem telefone para conferência manual.</p><ul>'+preparados.map(x=>'<li>'+esc(x.r.nome)+' — '+esc(x.r.telefone||"sem telefone")+' <span class="sub">('+ (x.existente?"atualizar":"novo") +')</span></li>').join("")+'</ul>';
-      save.disabled=false;
+      const semVinculo=preparados.filter(x=>x.origemImovel&&!x.imovelVinculado).length;
+      preview.innerHTML='<b>Prévia da importação</b><p>'+novos+' novos leads · '+atualizacoes+' cadastros que serão atualizados · '+semTelefone+' sem telefone para conferência manual.</p><ul>'+preparados.map(x=>'<li>'+esc(x.r.nome)+' — '+esc(x.r.telefone||"sem telefone")+' <span class="sub">('+ (x.existente?"atualizar":"novo") +')</span><br><span class="sub">'+(x.origemImovel?(x.imovelVinculado?'Imóvel vinculado: '+esc(x.imovelVinculado):'ORIGEM INFORMADA, MAS NÃO VINCULADA: '+esc(x.origemImovel)):'Imóvel de origem não identificado')+'</span></li>').join("")+'</ul>'+(semVinculo?'<p class="hint">'+semVinculo+' lead(s) têm imóvel de origem informado, mas não foi possível localizar uma correspondência única nos imóveis cadastrados. Não salve ainda; confira os títulos dos imóveis.</p>':'');
+      save.disabled=semVinculo>0;
     }catch(e){preparados=[];save.disabled=true;preview.textContent=e.message||"Não foi possível interpretar os dados."}
   }
   async function salvarImportacao(){
