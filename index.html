@@ -1603,6 +1603,57 @@ dialog#dlg{
   #dlg .body > .pane[hidden]{display:none!important;}
 }
 </style>
+<style id="jm-ia-conversas-css">
+.ia-page{display:flex;flex-direction:column;gap:14px;min-width:0}
+.ia-page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:4px 0 2px}
+.ia-page-head h2{margin:4px 0 5px}
+.ia-page-head p{margin:0;max-width:760px}
+.ia-eyebrow{font-size:.66rem;font-weight:800;letter-spacing:.16em;color:var(--accent)}
+.ia-secure{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:.76rem;border:1px solid var(--line);border-radius:30px;padding:8px 11px}
+.ia-secure span{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 16%,transparent)}
+.ia-layout{display:grid;grid-template-columns:minmax(250px,310px) minmax(0,1fr);gap:14px;align-items:stretch;min-width:0}
+.ia-sidebar,.ia-conversation{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.ia-panel{padding:16px;display:flex;flex-direction:column;gap:11px}
+.ia-panel h3{font-family:var(--font-display);font-size:1.08rem;margin:0;color:var(--ink)}
+.ia-label{display:block;font-size:.78rem;font-weight:750;color:var(--muted);margin:0 0 6px}
+#app #iaLeadSelect,#app #iaIncoming{width:100%;min-width:0;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:11px}
+.ia-lead-card{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);background:var(--surface-2);border-radius:12px;padding:12px;min-width:0}
+.ia-lead-name{font-weight:800;font-size:1rem;overflow-wrap:anywhere}
+.ia-lead-tags{display:flex;flex-wrap:wrap;gap:6px}
+.ia-lead-tags span{border:1px solid var(--line);border-radius:30px;padding:4px 8px;color:var(--muted);font-size:.68rem}
+.ia-lead-property{display:flex;flex-direction:column;gap:3px;padding-top:8px;border-top:1px solid var(--line);min-width:0}
+.ia-lead-property small{color:var(--muted);font-size:.7rem}
+.ia-lead-property b{overflow-wrap:anywhere;font-size:.84rem}
+.ia-lead-property span{font-size:.72rem;color:var(--muted)}
+.ia-lead-empty{font-size:.82rem;color:var(--muted);line-height:1.45}
+.ia-context{padding:11px 12px;background:color-mix(in srgb,var(--accent) 7%,var(--surface));border:1px solid var(--line);border-radius:11px;font-size:.75rem;line-height:1.45}
+.ia-context p{margin:5px 0 0;color:var(--muted);overflow-wrap:anywhere}
+.ia-tip{padding:14px 16px;border-top:1px solid var(--line);font-size:.76rem;color:var(--muted);line-height:1.5}
+.ia-tip b{color:var(--ink)}.ia-tip ol{padding-left:19px;margin:8px 0 0}.ia-tip li+li{margin-top:5px}
+.ia-conversation{display:flex;flex-direction:column;min-height:650px}
+.ia-conversation-head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.ia-conversation-head>div{display:flex;flex-direction:column;gap:3px;min-width:0}.ia-conversation-head b{font-size:.96rem;overflow-wrap:anywhere}.ia-conversation-head small{font-size:.72rem;color:var(--muted)}
+.ia-count{font-size:.7rem;color:var(--muted);border:1px solid var(--line);padding:4px 8px;border-radius:30px;white-space:nowrap}
+.ia-thread{flex:1;min-height:310px;max-height:58vh;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.012))}
+.ia-empty{margin:auto;text-align:center;color:var(--muted);font-size:.85rem;max-width:380px;line-height:1.5;padding:30px 18px}
+.ia-bubble{max-width:min(88%,720px);border:1px solid var(--line);border-radius:13px;padding:11px 13px;white-space:normal;overflow-wrap:anywhere}
+.ia-bubble.in{align-self:flex-start;background:var(--surface-2)}
+.ia-bubble.draft{align-self:flex-end;background:color-mix(in srgb,var(--accent) 10%,var(--surface));border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.ia-bubble.sent{align-self:flex-end;background:color-mix(in srgb,var(--good) 10%,var(--surface));border-color:color-mix(in srgb,var(--good) 35%,var(--line))}
+.ia-bubble-label{font-size:.68rem;font-weight:800;color:var(--muted);margin-bottom:7px}
+.ia-bubble-text{font-size:.87rem;line-height:1.55;white-space:pre-wrap}
+.ia-bubble-meta{margin-top:9px;padding-top:8px;border-top:1px solid var(--line);font-size:.73rem;line-height:1.5;color:var(--muted)}
+.ia-bubble-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.ia-compose{padding:14px 16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+#app #iaIncoming{min-height:100px;max-height:220px;resize:vertical;font-size:.9rem!important;line-height:1.5!important}
+.ia-compose-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.ia-compose-foot small{color:var(--muted);font-size:.7rem;max-width:430px;line-height:1.4}
+.ia-compose-disabled{color:var(--muted)}
+.ia-error{margin:0;color:var(--bad);font-size:.78rem;line-height:1.4}
+.ia-privacy-note{margin:0;color:var(--muted);font-size:.69rem;line-height:1.45}
+@media(max-width:900px){.ia-layout{grid-template-columns:minmax(0,1fr)}.ia-conversation{min-height:550px}.ia-thread{max-height:50vh}}
+@media(max-width:760px){.ia-page-head{align-items:flex-start}.ia-secure{font-size:.68rem}.ia-layout{gap:10px}.ia-conversation{min-height:56vh}.ia-thread{min-height:260px;max-height:44vh;padding:12px}.ia-bubble{max-width:96%}.ia-compose{padding:12px}.ia-compose-foot{align-items:stretch}.ia-compose-foot .btn{width:100%}.ia-panel{padding:13px}.ia-tip{padding:12px 13px}}
+</style>
 </head>
 <body>
 
@@ -1729,6 +1780,7 @@ let galeriaImoveisCache={}, galeriaImoveisCacheKey="", galeriaImoveisLoadingKey=
 let vPeriodo="ano";
 let view="painel", periodo="30", periodoInicio="", periodoFim="", fTemp="todos", fEtapa="ativos", fImovel="todos", fBusca="", fRetorno=false, fOrdem="quentes", fAnuncios="todos", scat="todos";
 let sb=null, sessao=null, canal=null, entrouId=null;
+const iaConversaState={leadId:"",incoming:"",busy:false,lastSuggestion:null,error:""};
 const eu=()=>CORRETOR;
 const LOGOS={"pablo rodrigues":"logo-mark-pablo.png"};
 function aplicarMarca(){const h=document.getElementById("brandNome");if(h)h.textContent=CORRETOR;const im=document.querySelector("img.mono");if(im){const src=LOGOS[String(CORRETOR).toLowerCase()]||"logo-mark.png";if(im.getAttribute("src")!==src)im.setAttribute("src",src);im.alt="Logo "+CORRETOR}}
@@ -1973,6 +2025,77 @@ function metricas(imovelId){
     cpl:leadsMeta?gasto/leadsMeta:NaN,cpq:qualif?gasto/qualif:NaN,cpv:vendas?gasto/vendas:NaN};
 }
 
+/* ---------- Conversas com IA ---------- */
+function vConversasIA(){
+  const leads=[...state.leads].sort((a,b)=>String(a.nome||"").localeCompare(String(b.nome||""),"pt-BR"));
+  if(iaConversaState.leadId&&!leads.some(l=>l.id===iaConversaState.leadId))iaConversaState.leadId="";
+  const lead=leads.find(l=>l.id===iaConversaState.leadId)||null;
+  const imovel=lead?state.imoveis.find(i=>String(i.id)===String(lead.imovelId)):null;
+  const notes=lead&&Array.isArray(lead.notas)?lead.notas:[];
+  const chat=notes.filter(n=>n&&n.chatId&&["user","suggestion","sent"].includes(n.chatRole)).sort((a,b)=>new Date(a.d||0)-new Date(b.d||0));
+  const bubbles=chat.map(n=>{
+    const kind=n.chatRole==="user"?"in":n.chatRole==="sent"?"sent":"draft";
+    const label=n.chatRole==="user"?"Mensagem recebida do cliente":n.chatRole==="sent"?"Mensagem marcada como enviada":"Sugestão da IA · ainda não enviada";
+    const actions=n.chatRole==="suggestion"?'<div class="ia-bubble-actions"><button class="btn sm" type="button" data-ia-copy-note="'+esc(n.chatId)+'">Copiar mensagem</button>'+(lead&&lead.telefone?'<a class="btn sm wa" target="_blank" rel="noopener" href="'+esc(waLink(lead.telefone,n.t||''))+'">Abrir WhatsApp</a>':'')+'<button class="btn sm primary" type="button" data-ia-mark-note="'+esc(n.chatId)+'">Marcar como enviada</button></div>':'';
+    return '<article class="ia-bubble '+kind+'"><div class="ia-bubble-label">'+label+' · '+esc(new Date(n.d||Date.now()).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))+'</div><div class="ia-bubble-text">'+esc(n.t||"")+'</div>'+(n.chatMeta?'<div class="ia-bubble-meta"><b>Estratégia:</b> '+esc(n.chatMeta.strategy||"")+(n.chatMeta.nextAction?'<br><b>Próximo passo:</b> '+esc(n.chatMeta.nextAction):"")+'</div>':'')+actions+'</article>';
+  }).join("");
+  const select='<label class="ia-label" for="iaLeadSelect">Cliente</label><select id="iaLeadSelect"><option value="">Selecione um cliente</option>'+leads.map(l=>'<option value="'+esc(l.id)+'"'+(lead&&lead.id===l.id?' selected':'')+'>'+esc(l.nome||"Sem nome")+(l.telefone?' · '+esc(l.telefone):' · sem telefone')+'</option>').join("")+'</select>';
+  const details=lead?'<div class="ia-lead-card"><div class="ia-lead-name">'+esc(lead.nome||"Lead")+'</div><div class="ia-lead-tags"><span>'+esc(ETAPA_NOME[lead.etapa]||lead.etapa||"Etapa não informada")+'</span><span>'+esc((lead.temperatura||"morno").toUpperCase())+'</span></div><div class="ia-lead-property"><small>Imóvel vinculado no CRM</small><b>'+esc(imovel?imovel.titulo:(lead.imovelId?"Imóvel não localizado":"Sem imóvel vinculado"))+'</b>'+(imovel?'<span>'+esc([imovel.codigo,imovel.status,brl0(imovel.valor)].filter(Boolean).join(" · "))+'</span>':'')+'</div><button class="btn sm" type="button" id="iaOpenLead">Abrir cadastro completo</button></div>':'<div class="ia-lead-card ia-lead-empty">Selecione um cliente para carregar o contexto comercial e o histórico.</div>';
+  const context=lead?'<div class="ia-context"><b>Contexto que a IA vai considerar</b><p>'+esc([lead.tipoDesejado,lead.finalidade,lead.bairrosInteresse,lead.faixaMin?'a partir de '+brl0(lead.faixaMin):'',lead.faixaMax?'até '+brl0(lead.faixaMax):'',lead.pagamento,lead.prazo].filter(Boolean).join(" · ")||"Ainda há poucas informações qualificadas; a IA evitará presumir dados.")+'</p></div>':'';
+  const history=lead?(bubbles||'<div class="ia-empty">Nenhuma mensagem foi registrada nesta conversa. Cole abaixo a primeira mensagem recebida.</div>'):'<div class="ia-empty">Escolha um cliente para começar.</div>';
+  return '<div class="ia-page"><div class="ia-page-head"><div><span class="ia-eyebrow">CARTEIRA JM · ASSISTENTE COMERCIAL</span><h2 class="sec">Conversas com IA</h2><p class="sub">Cole o que o cliente escreveu. A IA analisa o cadastro, o imóvel e as mensagens anteriores para sugerir sua próxima resposta.</p></div><span class="ia-secure"><span></span>Resposta sugerida · envio sempre manual</span></div><div class="ia-layout"><aside class="ia-sidebar"><div class="ia-panel"><h3>Atendimento</h3>'+select+details+context+'</div><div class="ia-tip"><b>Como usar</b><ol><li>Selecione o cliente.</li><li>Cole a mensagem recebida.</li><li>Gere a resposta e revise.</li><li>Copie e envie pelo WhatsApp. Depois marque como enviada para manter o contexto correto.</li></ol></div></aside><section class="ia-conversation"><div class="ia-conversation-head"><div><b>'+(lead?esc(lead.nome):'Conversa')+'</b><small>Histórico deste cliente</small></div><span class="spacer"></span><span class="ia-count">'+chat.length+' registros</span></div><div class="ia-thread" id="iaThread">'+history+'</div>'+(lead?'<form class="ia-compose" id="iaChatForm"><label class="ia-label" for="iaIncoming">O que o cliente acabou de mandar?</label><textarea id="iaIncoming" maxlength="5000" placeholder="Cole aqui a mensagem recebida no WhatsApp…" required>'+esc(iaConversaState.incoming)+'</textarea><div class="ia-compose-foot"><small>A IA não envia nada ao cliente. Você revisa, copia e decide quando enviar.</small><button class="btn primary" type="submit" id="iaGenerate" '+(iaConversaState.busy?'disabled':'')+'>'+(iaConversaState.busy?'Analisando conversa…':'Gerar resposta')+'</button></div>'+(iaConversaState.error?'<p class="ia-error">'+esc(iaConversaState.error)+'</p>':'')+'</form>':'<div class="ia-compose ia-compose-disabled"><p>Selecione um cliente no painel ao lado para iniciar.</p></div>')+'</section></div><p class="ia-privacy-note">Para gerar a resposta, os dados comerciais relevantes do lead e o trecho recente da conversa serão enviados à API da OpenAI por uma função protegida no Supabase. Telefone e e-mail não são enviados.</p></div>';
+}
+
+function contextoLeadParaIA(lead){
+  const imovel=state.imoveis.find(i=>String(i.id)===String(lead.imovelId));
+  const pick={
+    nome:lead.nome, etapa:ETAPA_NOME[lead.etapa]||lead.etapa, temperatura:lead.temperatura,
+    origem:lead.origem, proximoPasso:lead.proximoPasso, observacoes:lead.obs,
+    tipoDesejado:lead.tipoDesejado, finalidade:lead.finalidade, bairrosInteresse:lead.bairrosInteresse,
+    quartos:lead.quartos, vagas:lead.vagas, faixaMin:lead.faixaMin, faixaMax:lead.faixaMax,
+    parcelaConfortavel:lead.orcamento, caracteristicasObrigatorias:lead.obrigatorios,
+    outrosImoveisVistos:lead.outrosVistos, motivoCompra:lead.motivoCompra, prazo:lead.prazo,
+    decisores:lead.decisores, dor:lead.dor, objecoes:lead.objecoes, detalhesObjecoes:lead.objecoesObs,
+    formaPagamento:lead.pagamento, situacaoCredito:lead.credito, detalhesCredito:lead.creditoObs,
+    fgts:lead.fgts, temImovelProprio:lead.temImovel, valorEntrada:lead.entradaValor,
+    situacaoEntrada:lead.entradaSituacao, motivoEsfriou:lead.motivoEsfriou,
+    detalhesEsfriou:lead.esfriouObs, proximoContato:lead.proximoContato,
+    imovelVinculado:imovel?{titulo:imovel.titulo,codigo:imovel.codigo,status:imovel.status,valor:imovel.valor,tipo:imovel.tipo,bairro:imovel.bairro,quartos:imovel.quartos}:null
+  };
+  Object.keys(pick).forEach(k=>{const v=pick[k];if(v===undefined||v===null||v===""||(Array.isArray(v)&&!v.length))delete pick[k]});
+  return pick;
+}
+
+async function iaGerarResposta(leadId,incoming){
+  const lead=state.leads.find(l=>String(l.id)===String(leadId));
+  if(!lead)throw new Error("Selecione um cliente válido.");
+  if(!sessao)throw new Error("Sua sessão expirou. Entre novamente no CRM.");
+  const recent=(lead.notas||[]).filter(n=>n&&["user","sent"].includes(n.chatRole)).slice(0,16).reverse().map(n=>({role:n.chatRole==="user"?"user":"assistant",content:String(n.t||"")}));
+  const {data,error}=await sb.functions.invoke("crm-chat",{body:{lead:contextoLeadParaIA(lead),history:recent,incoming}});
+  if(error){let msg=error.message||"Falha ao chamar a função crm-chat.";try{const body=await error.context.json();if(body&&body.error)msg=body.error}catch(_){};throw new Error(msg)}
+  if(!data||!data.suggestion||!data.suggestion.message)throw new Error(data&&data.error?data.error:"A IA não retornou uma sugestão válida.");
+  const suggestion=data.suggestion;
+  const chatId=uid(),now=new Date().toISOString();
+  const received={chatId,chatRole:"user",d:now,t:incoming,tipo:"whatsapp",autor:"Cliente"};
+  const draft={chatId,chatRole:"suggestion",d:new Date(Date.now()+1).toISOString(),t:suggestion.message,tipo:"followup",autor:"Sugestão IA (não enviada)",chatMeta:{strategy:suggestion.strategy||"",nextAction:suggestion.next_action||"",question:suggestion.follow_up_question||""}};
+  const updated=Object.assign({},lead,{notas:[draft,received,...(lead.notas||[])]});
+  await salvar("leads",updated,{silencioso:true});
+  iaConversaState.lastSuggestion={leadId,chatId,message:suggestion.message};
+  iaConversaState.incoming="";
+  return suggestion;
+}
+
+async function iaMarcarComoEnviada(leadId,chatId){
+  const lead=state.leads.find(l=>String(l.id)===String(leadId));
+  if(!lead)return;
+  const notes=(lead.notas||[]).map(n=>n.chatId===chatId&&n.chatRole==="suggestion"?Object.assign({},n,{chatRole:"sent",autor:eu(),enviadoEm:new Date().toISOString()}):n);
+  if(notes.every((n,i)=>n===(lead.notas||[])[i])){toast("Essa sugestão não está mais pendente.");return}
+  await salvar("leads",Object.assign({},lead,{notas,ultimoContato:hoje()}),{silencioso:true});
+  iaConversaState.lastSuggestion=null;
+  toast("Mensagem marcada como enviada no histórico.");
+  render();
+}
+
 /* ---------- Render ---------- */
 const dlg=$("#dlg"), form=$("#dlgForm");
 function render(){
@@ -1984,7 +2107,7 @@ function render(){
   fab.textContent=view==="vendas"?"+ Nova venda":view==="imoveis"?"+ Novo imóvel":view==="gastos"?"+ Lançar gasto":view==="scripts"?"+ Novo script":"+ Novo lead";
   const app=$("#app");
   if(!state.ready){app.innerHTML='<div class="loading">Carregando seus dados…</div>';return}
-  app.innerHTML=({painel:vPainel,leads:vLeads,vendas:vVendas,scripts:vScripts,imoveis:vImoveis,gastos:vGastos,ajustes:vAjustes}[view])();
+  app.innerHTML=({painel:vPainel,leads:vLeads,vendas:vVendas,scripts:vScripts,imoveis:vImoveis,gastos:vGastos,ajustes:vAjustes,ia_conversas:vConversasIA}[view]||vPainel)();
   bindView();
   if(view==="imoveis")carregarGaleriaImoveis();
 }
@@ -2637,6 +2760,32 @@ function bindView(){
   app.querySelectorAll("[data-edit-venda]").forEach(b=>b.onclick=()=>abrirVenda(b.dataset.editVenda));
   app.querySelectorAll("[data-venda-lead]").forEach(b=>b.onclick=()=>abrirVenda(null,b.dataset.vendaLead));
   app.querySelectorAll("[data-receber]").forEach(b=>b.onclick=async e=>{e.stopPropagation();const v=state.vendas.find(x=>x.id===b.dataset.receber);if(!v)return;const n=b.dataset.quem;const rec=Object.assign({},v.recebido||{});const em=Object.assign({},v.recebidoEm||{});rec[n]=!rec[n];em[n]=rec[n]?hoje():"";try{await salvar("vendas",Object.assign({},v,{recebido:rec,recebidoEm:em,alteradoPor:eu()}));toast(rec[n]?"Marcado como recebido":"Voltou para a receber")}catch(_){}});
+  const iaThread=app.querySelector("#iaThread"); if(iaThread)iaThread.scrollTop=iaThread.scrollHeight;
+  const iaLeadSelect=app.querySelector("#iaLeadSelect");
+  if(iaLeadSelect)iaLeadSelect.onchange=()=>{iaConversaState.leadId=iaLeadSelect.value;iaConversaState.incoming="";iaConversaState.error="";iaConversaState.lastSuggestion=null;render()};
+  const iaOpenLead=app.querySelector("#iaOpenLead");
+  if(iaOpenLead)iaOpenLead.onclick=()=>{if(iaConversaState.leadId)abrirLead(iaConversaState.leadId,"historico")};
+  const iaForm=app.querySelector("#iaChatForm");
+  if(iaForm)iaForm.onsubmit=async e=>{
+    e.preventDefault();
+    const input=app.querySelector("#iaIncoming");
+    const value=String(input&&input.value||"").trim();
+    if(!iaConversaState.leadId){toast("Selecione um cliente primeiro.");return}
+    if(!value){toast("Cole a mensagem que o cliente enviou.");return}
+    if(iaConversaState.busy)return;
+    iaConversaState.incoming=value;iaConversaState.busy=true;iaConversaState.error="";render();
+    try{await iaGerarResposta(iaConversaState.leadId,value)}
+    catch(err){iaConversaState.error=err&&err.message?err.message:"Não foi possível gerar a resposta.";iaConversaState.incoming=value}
+    finally{iaConversaState.busy=false;render()}
+  };
+  app.querySelectorAll("[data-ia-copy-note]").forEach(b=>b.onclick=()=>{
+    const lead=state.leads.find(l=>String(l.id)===String(iaConversaState.leadId));
+    const n=(lead&&lead.notas||[]).find(x=>x.chatId===b.dataset.iaCopyNote&&x.chatRole==="suggestion");
+    if(n)copiar(n.t);
+  });
+  app.querySelectorAll("[data-ia-mark-note]").forEach(b=>b.onclick=async()=>{
+    try{await iaMarcarComoEnviada(iaConversaState.leadId,b.dataset.iaMarkNote)}catch(e){toast("Não foi possível atualizar o histórico: "+(e.message||"erro"))}
+  });
   const imp=$("#impFile"); if(imp)imp.onchange=()=>{if(imp.files&&imp.files[0])importarBackup(imp.files[0]);imp.value=""};
 }
 function aplicarEtapa(rec,nova,antiga){
@@ -3178,7 +3327,7 @@ async function importarBackup(file){
 /* ---------- Navegação ---------- */
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{view=t.dataset.view;try{localStorage.setItem(LS_KEY+"-view",view)}catch(e){}render();window.scrollTo(0,0)});
 $("#fab").onclick=()=>{if(view==="vendas")abrirVenda();else if(view==="imoveis")abrirImovel();else if(view==="gastos")abrirGasto();else if(view==="scripts")abrirScript();else abrirLead()};
-try{const v=localStorage.getItem(LS_KEY+"-view");if(v&&["painel","leads","vendas","scripts","imoveis","gastos","ajustes"].includes(v))view=v}catch(e){}
+try{const v=localStorage.getItem(LS_KEY+"-view");if(v&&["painel","leads","vendas","scripts","imoveis","gastos","ajustes","ia_conversas"].includes(v))view=v}catch(e){}
 
 /* ---------- WhatsApp + Inbox (integração ZapClaw) ---------- */
 /*
@@ -3187,6 +3336,12 @@ try{const v=localStorage.getItem(LS_KEY+"-view");if(v&&["painel","leads","vendas
  * Ele reutiliza sb, sessao, donoId, view, render, modoSemLogin, esc, toast e abrirLead.
  */
 const waPanelState = { conversations: [], selectedId: null, messages: [], loading: false, channel: null, search: "", mobileChatOpen: false };
+
+const iaNav=document.createElement("button");
+iaNav.type="button";iaNav.className="tab";iaNav.dataset.view="ia_conversas";iaNav.setAttribute("aria-label","Conversas com IA");iaNav.title="Conversas com IA";
+iaNav.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a8.5 8.5 0 0 0-7.4 12.7L3.5 21l5.1-1.1A8.5 8.5 0 1 0 12 3Z"/><path d="M8 10h8M8 14h5"/></svg>Conversas';
+document.querySelector("nav.tabs")?.appendChild(iaNav);
+iaNav.onclick=()=>{view="ia_conversas";iaConversaState.error="";try{localStorage.setItem(LS_KEY+"-view",view)}catch(_){}render();window.scrollTo(0,0)};
 
 const waNav = document.createElement("button");
 waNav.type = "button";
@@ -3522,7 +3677,7 @@ if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.s
     if(node.matches?.('img[src*="logo-mark"]'))installLogoFallback(node);
     node.querySelectorAll?.('img[src*="logo-mark"]').forEach(installLogoFallback);
   }))).observe(document.body,{childList:true,subtree:true});
-  const titles={painel:"Painel de atendimento",leads:"Leads",vendas:"Vendas",scripts:"Scripts de atendimento",imoveis:"Imóveis",gastos:"Campanhas",ajustes:"Ajustes",whatsapp:"WhatsApp"};
+  const titles={painel:"Painel de atendimento",leads:"Leads",vendas:"Vendas",scripts:"Scripts de atendimento",imoveis:"Imóveis",gastos:"Campanhas",ajustes:"Ajustes",whatsapp:"WhatsApp",ia_conversas:"Conversas com IA"};
   const sun='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>';
   const moon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 15.3A8.5 8.5 0 0 1 8.7 3.8 8.6 8.6 0 1 0 20.2 15.3Z"/></svg>';
   function setTheme(theme){
