@@ -2009,6 +2009,59 @@ function liLead(l,sub,when,late,acao){
   return'<div class="li" data-open-lead="'+esc(l.id)+'"'+(acao?' data-tab="'+acao+'"':'')+'><i class="dot" style="background:'+tempCor(l.temperatura)+'"></i><div class="who"><b>'+esc(l.nome||"Sem nome")+'</b><span>'+sub+'</span></div><span class="when'+(late?" late":"")+'">'+esc(when)+'</span></div>';
 }
 
+function planoAcaoLead(l,t){
+  const ci=cadInfo(l);
+  const retorno=ci&&!ci.fim?ci.due:(l.proximoContato||"");
+  const visita=l.visita?String(l.visita).slice(0,10):"";
+  const diasSemContato=l.ultimoContato?diasDesde(l.ultimoContato):(l.entrada?diasDesde(l.entrada):999);
+  const faltas=[];
+  if(!l.tipoDesejado)faltas.push("tipo de imóvel");
+  if(!(l.orcamento||l.faixaMax))faltas.push("orçamento");
+  if(!l.prazo)faltas.push("prazo de compra");
+  if(!(l.pagamento||l.credito))faltas.push("forma de pagamento/crédito");
+  if(!l.decisores)faltas.push("quem decide a compra");
+  if(!l.bairrosInteresse)faltas.push("bairros de interesse");
+
+  let rank=30,classe="normal",rotulo="Planejar",motivo="Lead em acompanhamento",acao=l.proximoPasso||"Revisar o cadastro e definir o próximo contato.",prazo="Sem retorno agendado";
+  if(!l.telefone){rank=25;classe="bloqueado";rotulo="Cadastro pendente";motivo="Sem telefone cadastrado";acao="Localizar e registrar um telefone ou outro canal de contato antes de tentar a retomada.";}
+  else if(retorno&&retorno<t){rank=110;classe="urgente";rotulo="Atrasado";motivo="Retorno previsto para "+fmtData(retorno)+" não concluído";prazo="Atrasado · "+quando(retorno);}
+  else if(retorno&&retorno===t){rank=105;classe="hoje";rotulo="Hoje";motivo="Há um retorno programado para hoje";prazo="Hoje";}
+  else if(l.reativarEm&&l.reativarEm<=t&&(l.temperatura==="frio"||l.etapa==="perdido")){
+    rank=98;classe="reativar";rotulo="Reativar";motivo="Data de reativação chegou";acao=l.proximoPasso||"Retomar o contato e confirmar se a intenção de compra continua.";prazo="Reativar hoje";
+  }
+  else if(visita&&visita>=t&&diasDesde(visita)>=-3){
+    rank=94;classe="hoje";rotulo="Visita próxima";motivo="Visita marcada para "+fmtVisita(l.visita);acao=l.proximoPasso||"Confirmar presença, horário e endereço; preparar as informações do imóvel.";prazo=fmtVisita(l.visita);
+  }
+  else if(l.etapa==="proposta"){
+    rank=90;classe="alta";rotulo="Alta prioridade";motivo="Lead está na etapa de proposta";acao=l.proximoPasso||"Confirmar se recebeu e analisou a proposta, esclarecer dúvidas e combinar uma data de retorno.";
+  }
+  else if(l.etapa==="visitou"){
+    rank=86;classe="alta";rotulo="Pós-visita";motivo="É importante colher o retorno enquanto a visita está recente";acao=l.proximoPasso||"Perguntar o que achou do imóvel, identificar objeções e combinar o próximo passo.";
+  }
+  else if(l.temperatura==="quente"&&diasSemContato>=2&&!(retorno&&retorno>t)){
+    rank=84;classe="alta";rotulo="Foco";motivo="Lead quente sem contato recente";acao=l.proximoPasso||"Retomar hoje, entender se continua interessado e sair da conversa com um próximo passo e uma data definidos.";
+  }
+  else if(l.etapa==="novo"){
+    rank=80;classe="alta";rotulo="Primeiro contato";motivo="Lead novo ainda precisa ser atendido";acao=l.proximoPasso||"Fazer contato pessoal, entender o que procura e identificar o anúncio que gerou a conversa.";
+  }
+  else if(l.temperatura==="frio"||l.etapa==="perdido"){
+    rank=(l.reativarEm&&l.reativarEm>t)?42:48;classe="reativar";rotulo="Reativação";motivo=l.motivoEsfriou?"Motivo registrado: "+l.motivoEsfriou:"Lead frio; retomar sem pressionar";acao=l.proximoPasso||"Confirmar se a busca continua e oferecer opções compatíveis, respeitando o motivo do esfriamento.";prazo=l.reativarEm&&l.reativarEm>t?"Programado para "+fmtData(l.reativarEm):"Sem data de reativação";
+  }
+  else if(l.etapa==="qualificando"){
+    rank=l.temperatura==="quente"?78:66;classe=l.temperatura==="quente"?"alta":"normal";rotulo=l.temperatura==="quente"?"Qualificar agora":"Qualificação";motivo=faltas.length?"Faltam dados para avançar: "+faltas.slice(0,3).join(", "):"Perfil mapeado; avançar para visita ou seleção de imóveis";acao=l.proximoPasso|| (faltas.length?"Perguntar sobre "+faltas[0]+" e registrar a resposta.":"Separar opções compatíveis e propor visita.");
+  }
+  else if(l.etapa==="qualificado"){
+    rank=74;classe="alta";rotulo="Agendar visita";motivo="Lead já qualificado";acao=l.proximoPasso||"Selecionar imóveis compatíveis e sugerir dia e horário para visita.";
+  }
+  else if(retorno&&retorno>t){
+    rank=35;classe="programado";rotulo="Programado";motivo="Próximo contato já está agendado";prazo="Retornar em "+fmtData(retorno);acao=l.proximoPasso||"Respeitar a data combinada e preparar opções ou respostas antes do retorno.";
+  }
+  if(retorno&&retorno>t&&rank<80)prazo="Retornar em "+fmtData(retorno);
+  const imovel=imovelNome(l.imovelId);
+  const su=sugestao(l),script=su?scriptPor(su.id):null;
+  return {l,rank,classe,rotulo,motivo,acao,prazo,imovel,faltas,script,scriptWhy:su?su.why:""};
+}
+
 function vPainel(){
   const m=metricas(); const meta=Number(state.config.metaVendas)||4; const t=hoje();
   // A meta acompanha as vendas efetivamente registradas nos últimos 30 dias.
@@ -2022,6 +2075,11 @@ function vPainel(){
     .filter(x=>x.due&&x.due<=t).sort((a,b)=>a.due.localeCompare(b.due));
   const visitasProx=state.leads.filter(l=>l.visita&&l.visita.slice(0,10)>=t&&ativo(l)).sort((a,b)=>a.visita.localeCompare(b.visita)).slice(0,6);
   const parados=state.leads.filter(l=>ativo(l)&&l.temperatura==="quente"&&diasDesde(l.ultimoContato||l.entrada)>=2&&!(l.proximoContato&&l.proximoContato>t)).slice(0,6);
+  const planoAtendimento=state.leads.filter(l=>l.etapa!=="fechado"&&!(l.etapa==="perdido"&&!l.reativarEm&&!l.cadencia)).map(l=>planoAcaoLead(l,t)).sort((a,b)=>b.rank-a.rank||pontuacao(b.l)-pontuacao(a.l));
+  const focoPrincipal=planoAtendimento[0]||null;
+  const atrasados=planoAtendimento.filter(x=>x.classe==="urgente").length;
+  const quentesSemData=state.leads.filter(l=>ativo(l)&&l.temperatura==="quente"&&!l.proximoContato&&!cadInfo(l)).length;
+  const qualificacaoPendente=planoAtendimento.filter(x=>x.l.etapa==="qualificando"&&x.faltas.length).length;
 
   let h='<section class="painel-banner" aria-label="Espaço de trabalho da Carteira JM"><div class="painel-banner-copy"><span class="eyebrow">Carteira JM · gestão imobiliária</span><h2>Sua operação, em um só lugar.</h2><p>Leads, imóveis e resultados com visão clara do negócio.</p></div></section><div class="hello"><div><h2>'+sauda+', <em>'+esc(eu())+'</em>.</h2><p>'+esc(dataExt.charAt(0).toUpperCase()+dataExt.slice(1))+' · '+(fus.length?fus.length+(fus.length>1?" contatos pra fazer hoje":" contato pra fazer hoje"):"nenhum contato pendente hoje")+'</p></div><span class="spacer"></span>'+periodoSeg()+'</div>';
 
@@ -2042,6 +2100,20 @@ function vPainel(){
   h+='<div class="panel"><h3>Próximas visitas <span class="count">'+visitasProx.length+'</span></h3>'+(visitasProx.length?'<div class="list">'+visitasProx.map(l=>liLead(l,esc(imovelNome(l.imovelId)),fmtVisita(l.visita),false)).join("")+'</div>':'<p class="mini-empty">Nenhuma visita marcada.</p>')+'</div>';
   h+='<div class="panel"><h3>Quentes parados <span class="count">'+parados.length+'</span></h3>'+(parados.length?'<div class="list">'+parados.map(l=>liLead(l,esc(ETAPA_NOME[l.etapa]||"Novo"),diasDesde(l.ultimoContato||l.entrada)+" dias",true,"script")).join("")+'</div>':'<p class="mini-empty">Nenhum lead quente esquecido. 👏</p>')+'</div>';
   h+='</div>';
+
+  // plano de atendimento: prioridades e ação objetiva por lead
+  h+='<section class="jm-action-center"><div class="jm-action-heading"><div><span class="eyebrow">Rotina comercial</span><h2>Plano de atendimento</h2><p>O que fazer agora, quem priorizar e qual próximo passo registrar.</p></div><div class="jm-action-summary"><span><b>'+atrasados+'</b> retornos atrasados</span><span><b>'+quentesSemData+'</b> quentes sem data</span><span><b>'+qualificacaoPendente+'</b> em qualificação com dados pendentes</span></div></div>';
+  if(focoPrincipal){
+    const f=focoPrincipal;
+    h+='<div class="jm-main-focus"><div class="jm-focus-top"><span class="jm-priority '+f.classe+'">'+esc(f.rotulo)+'</span><span class="jm-focus-label">FOCO RECOMENDADO AGORA</span></div><div class="jm-focus-name">'+esc(f.l.nome||"Sem nome")+'</div><div class="jm-focus-meta">'+esc(f.imovel)+(f.l.telefone?' · '+esc(f.l.telefone):' · Sem telefone')+' · '+esc(ETAPA_NOME[f.l.etapa]||f.l.etapa||"Sem etapa")+'</div><p class="jm-focus-reason">'+esc(f.motivo)+'</p><div class="jm-focus-action"><b>Próxima ação</b><span>'+esc(f.acao)+'</span></div><div class="jm-focus-buttons"><button class="btn sm primary" type="button" data-open-lead="'+esc(f.l.id)+'">Abrir cadastro</button>'+(f.script?'<button class="btn sm" type="button" data-open-lead="'+esc(f.l.id)+'" data-tab="script">Abrir roteiro de contato</button>':'')+'</div></div>';
+  }
+  const tarefasVisiveis=planoAtendimento.slice(0,9);
+  h+='<div class="jm-task-header"><h3>Fila de próximos passos</h3><span>'+planoAtendimento.length+' leads em acompanhamento · mostrando '+tarefasVisiveis.length+'</span></div>';
+  if(tarefasVisiveis.length){
+    h+='<div class="jm-task-grid">'+tarefasVisiveis.map(x=>'<article class="jm-task-card"><div class="jm-task-top"><span class="jm-priority '+x.classe+'">'+esc(x.rotulo)+'</span><span class="jm-task-date">'+esc(x.prazo)+'</span></div><h4>'+esc(x.l.nome||"Sem nome")+'</h4><p class="jm-task-property">'+esc(x.imovel)+(x.l.telefone?' · '+esc(x.l.telefone):' · Sem telefone')+'</p><p class="jm-task-reason">'+esc(x.motivo)+'</p><div class="jm-task-action"><b>Fazer</b><span>'+esc(x.acao)+'</span></div>'+(x.faltas.length?'<div class="jm-task-missing"><b>Completar no cadastro:</b> '+esc(x.faltas.join(", "))+'</div>':'')+'<div class="jm-task-buttons"><button class="btn sm primary" type="button" data-open-lead="'+esc(x.l.id)+'">Abrir cliente</button>'+(x.script?'<button class="btn sm" type="button" data-open-lead="'+esc(x.l.id)+'" data-tab="script">Script</button>':'')+'</div></article>').join("")+'</div>';
+  }else h+='<p class="mini-empty">Nenhum atendimento pendente. Novos próximos passos aparecerão aqui conforme os leads forem atualizados.</p>';
+  if(planoAtendimento.length>tarefasVisiveis.length)h+='<p class="jm-task-footnote">Os demais '+(planoAtendimento.length-tarefasVisiveis.length)+' leads continuam na fila. A prioridade é recalculada automaticamente a partir da etapa, temperatura, datas de retorno e informações registradas.</p>';
+  h+='</section>';
 
   // funil + temperatura
   const ls=m.leads; const total=ls.length;
@@ -4743,6 +4815,54 @@ html[data-theme="light"] #app .wa-conv small { color:#625d54!important; }
   #app .kanban-column .lead { padding: 12px !important; }
 }
 /* Entre tablet e desktop, mantém o quadro horizontal já existente. */
+</style>
+
+
+<style id="jm-action-center-v1">
+#app .jm-action-center{margin:18px 0 8px;min-width:0}
+#app .jm-action-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:12px;flex-wrap:wrap}
+#app .jm-action-heading .eyebrow{display:block;font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+#app .jm-action-heading h2{margin:0;font-size:clamp(1.25rem,2vw,1.65rem);letter-spacing:-.025em}
+#app .jm-action-heading p{margin:5px 0 0;color:var(--muted);font-size:.88rem}
+#app .jm-action-summary{display:flex;gap:8px;flex-wrap:wrap}
+#app .jm-action-summary span{display:inline-flex;gap:5px;align-items:center;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:.76rem;color:var(--muted)}
+#app .jm-action-summary b{font-size:.92rem;color:var(--ink)}
+#app .jm-main-focus{background:linear-gradient(135deg,var(--surface),var(--surface-2));border:1px solid var(--accent-line);border-left:4px solid var(--accent);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow)}
+#app .jm-focus-top,#app .jm-task-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+#app .jm-focus-label{font-size:.65rem;font-weight:800;letter-spacing:.14em;color:var(--muted)}
+#app .jm-focus-name{font-size:1.35rem;font-weight:800;margin-top:9px;line-height:1.2}
+#app .jm-focus-meta,#app .jm-task-property{font-size:.8rem;color:var(--muted);margin-top:4px}
+#app .jm-focus-reason{font-size:.88rem;margin:10px 0 8px;color:var(--ink)}
+#app .jm-focus-action{display:grid;grid-template-columns:115px minmax(0,1fr);gap:10px;padding:11px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:.86rem;line-height:1.45}
+#app .jm-focus-action b,#app .jm-task-action b{color:var(--accent)}
+#app .jm-focus-buttons,#app .jm-task-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+#app .jm-priority{display:inline-flex;align-items:center;white-space:nowrap;border-radius:99px;padding:4px 9px;font-size:.68rem;font-weight:800;border:1px solid var(--line);background:var(--surface-2);color:var(--muted)}
+#app .jm-priority.urgente{background:rgba(220,65,65,.12);border-color:rgba(220,65,65,.35);color:var(--bad)}
+#app .jm-priority.hoje,#app .jm-priority.alta{background:rgba(202,151,54,.13);border-color:rgba(202,151,54,.35);color:var(--accent)}
+#app .jm-priority.reativar{background:rgba(47,123,216,.10);border-color:rgba(47,123,216,.28);color:var(--blue)}
+#app .jm-priority.bloqueado{background:var(--surface-2);color:var(--muted)}
+#app .jm-priority.programado{background:rgba(45,150,120,.10);border-color:rgba(45,150,120,.28);color:var(--teal)}
+#app .jm-task-header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+#app .jm-task-header h3{margin:0;font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+#app .jm-task-header span,#app .jm-task-footnote{font-size:.76rem;color:var(--muted)}
+#app .jm-task-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:11px;align-items:stretch}
+#app .jm-task-card{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:13px;box-shadow:var(--shadow);display:flex;flex-direction:column}
+#app .jm-task-date{font-size:.72rem;color:var(--muted);text-align:right}
+#app .jm-task-card h4{font-size:1rem;line-height:1.25;margin:11px 0 0;overflow-wrap:anywhere}
+#app .jm-task-reason{font-size:.78rem;color:var(--muted);margin:8px 0 0;line-height:1.4}
+#app .jm-task-action{display:flex;flex-direction:column;gap:4px;padding:10px;margin-top:10px;background:var(--surface-2);border-radius:9px;font-size:.8rem;line-height:1.45;flex:1}
+#app .jm-task-missing{font-size:.74rem;color:var(--muted);margin-top:9px;line-height:1.4}
+#app .jm-task-missing b{color:var(--ink)}
+#app .jm-task-footnote{margin:10px 0 0}
+@media(max-width:760px){
+  #app .jm-action-heading{align-items:flex-start}
+  #app .jm-action-summary{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  #app .jm-action-summary span{justify-content:center;flex-direction:column;align-items:flex-start;padding:7px;font-size:.65rem}
+  #app .jm-main-focus{padding:13px}
+  #app .jm-focus-action{grid-template-columns:1fr;gap:4px}
+  #app .jm-task-grid{grid-template-columns:1fr}
+  #app .jm-task-buttons .btn{flex:1}
+}
 </style>
 
 </body>
