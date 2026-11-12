@@ -1646,6 +1646,17 @@ dialog#dlg{
 .ia-bubble-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
 .ia-compose{padding:14px 16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
 #app #iaIncoming{min-height:100px;max-height:220px;resize:vertical;font-size:.9rem!important;line-height:1.5!important}
+.ia-attach-tools{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.ia-attach-tools small{font-size:.7rem;color:var(--muted);line-height:1.35}
+#app #iaImages{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;clip-path:inset(50%)}
+.ia-attachments{display:flex;gap:8px;flex-wrap:wrap}
+.ia-attachment{display:flex;align-items:center;gap:8px;min-width:0;max-width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:11px;background:var(--surface-2)}
+.ia-attachment img{width:54px;height:54px;flex:0 0 54px;object-fit:cover;border-radius:7px;background:var(--bg)}
+.ia-attachment-info{min-width:0;display:flex;flex-direction:column;gap:3px}
+.ia-attachment-info b{font-size:.72rem;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ia-attachment-info small{font-size:.66rem;color:var(--muted)}
+.ia-attachment button{padding:5px 8px;min-height:30px}
+.ia-bubble-images{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:.72rem;line-height:1.45;color:var(--muted)}
 .ia-compose-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .ia-compose-foot small{color:var(--muted);font-size:.7rem;max-width:430px;line-height:1.4}
 .ia-compose-disabled{color:var(--muted)}
@@ -1780,7 +1791,7 @@ let galeriaImoveisCache={}, galeriaImoveisCacheKey="", galeriaImoveisLoadingKey=
 let vPeriodo="ano";
 let view="painel", periodo="30", periodoInicio="", periodoFim="", fTemp="todos", fEtapa="ativos", fImovel="todos", fBusca="", fRetorno=false, fOrdem="quentes", fAnuncios="todos", scat="todos";
 let sb=null, sessao=null, canal=null, entrouId=null;
-const iaConversaState={leadId:"",incoming:"",busy:false,lastSuggestion:null,error:""};
+const iaConversaState={leadId:"",incoming:"",images:[],busy:false,lastSuggestion:null,error:""};
 const eu=()=>CORRETOR;
 const LOGOS={"pablo rodrigues":"logo-mark-pablo.png"};
 function aplicarMarca(){const h=document.getElementById("brandNome");if(h)h.textContent=CORRETOR;const im=document.querySelector("img.mono");if(im){const src=LOGOS[String(CORRETOR).toLowerCase()]||"logo-mark.png";if(im.getAttribute("src")!==src)im.setAttribute("src",src);im.alt="Logo "+CORRETOR}}
@@ -2035,15 +2046,19 @@ function vConversasIA(){
   const chat=notes.filter(n=>n&&n.chatId&&["user","suggestion","sent"].includes(n.chatRole)).sort((a,b)=>new Date(a.d||0)-new Date(b.d||0));
   const bubbles=chat.map(n=>{
     const kind=n.chatRole==="user"?"in":n.chatRole==="sent"?"sent":"draft";
-    const label=n.chatRole==="user"?"Mensagem recebida do cliente":n.chatRole==="sent"?"Mensagem marcada como enviada":"Sugestão da IA · ainda não enviada";
+    const optionLabel=n.chatMeta&&n.chatMeta.optionLabel?String(n.chatMeta.optionLabel):"";
+    const label=n.chatRole==="user"?"Mensagem recebida do cliente":n.chatRole==="sent"?(optionLabel?"Mensagem marcada como enviada · "+optionLabel:"Mensagem marcada como enviada"):(optionLabel?"Sugestão da IA · "+optionLabel+" · ainda não enviada":"Sugestão da IA · ainda não enviada");
     const actions=n.chatRole==="suggestion"?'<div class="ia-bubble-actions"><button class="btn sm" type="button" data-ia-copy-note="'+esc(n.chatId)+'">Copiar mensagem</button>'+(lead&&lead.telefone?'<a class="btn sm wa" target="_blank" rel="noopener" href="'+esc(waLink(lead.telefone,n.t||''))+'">Abrir WhatsApp</a>':'')+'<button class="btn sm primary" type="button" data-ia-mark-note="'+esc(n.chatId)+'">Marcar como enviada</button></div>':'';
-    return '<article class="ia-bubble '+kind+'"><div class="ia-bubble-label">'+label+' · '+esc(new Date(n.d||Date.now()).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))+'</div><div class="ia-bubble-text">'+esc(n.t||"")+'</div>'+(n.chatMeta?'<div class="ia-bubble-meta"><b>Estratégia:</b> '+esc(n.chatMeta.strategy||"")+(n.chatMeta.nextAction?'<br><b>Próximo passo:</b> '+esc(n.chatMeta.nextAction):"")+'</div>':'')+actions+'</article>';
+    const imageSummary=n.chatImagesCount?'<div class="ia-bubble-images"><b>'+Number(n.chatImagesCount)+' print(s) analisado(s).</b>'+(n.chatImageContext?' '+esc(n.chatImageContext):'')+'</div>':'';
+    const meta=n.chatMeta?'<div class="ia-bubble-meta">'+(n.chatMeta.rationale?'<b>Abordagem:</b> '+esc(n.chatMeta.rationale):'')+(n.chatMeta.nextAction?'<br><b>Próximo passo comercial:</b> '+esc(n.chatMeta.nextAction):'')+(n.chatMeta.qualificationKnown?'<br><b>Já sabemos:</b> '+esc(n.chatMeta.qualificationKnown):'')+(n.chatMeta.qualificationPending?'<br><b>Informações que ainda faltam:</b> '+esc(n.chatMeta.qualificationPending):'')+(n.chatMeta.nextQuestion?'<br><b>Próxima pergunta de qualificação:</b> '+esc(n.chatMeta.nextQuestion):'')+'</div>':'';
+    return '<article class="ia-bubble '+kind+'"><div class="ia-bubble-label">'+label+' · '+esc(new Date(n.d||Date.now()).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))+'</div><div class="ia-bubble-text">'+esc(n.t||"")+'</div>'+imageSummary+meta+actions+'</article>';
   }).join("");
   const select='<label class="ia-label" for="iaLeadSelect">Cliente</label><select id="iaLeadSelect"><option value="">Selecione um cliente</option>'+leads.map(l=>'<option value="'+esc(l.id)+'"'+(lead&&lead.id===l.id?' selected':'')+'>'+esc(l.nome||"Sem nome")+(l.telefone?' · '+esc(l.telefone):' · sem telefone')+'</option>').join("")+'</select>';
   const details=lead?'<div class="ia-lead-card"><div class="ia-lead-name">'+esc(lead.nome||"Lead")+'</div><div class="ia-lead-tags"><span>'+esc(ETAPA_NOME[lead.etapa]||lead.etapa||"Etapa não informada")+'</span><span>'+esc((lead.temperatura||"morno").toUpperCase())+'</span></div><div class="ia-lead-property"><small>Imóvel vinculado no CRM</small><b>'+esc(imovel?imovel.titulo:(lead.imovelId?"Imóvel não localizado":"Sem imóvel vinculado"))+'</b>'+(imovel?'<span>'+esc([imovel.codigo,imovel.status,brl0(imovel.valor)].filter(Boolean).join(" · "))+'</span>':'')+'</div><button class="btn sm" type="button" id="iaOpenLead">Abrir cadastro completo</button></div>':'<div class="ia-lead-card ia-lead-empty">Selecione um cliente para carregar o contexto comercial e o histórico.</div>';
   const context=lead?'<div class="ia-context"><b>Contexto que a IA vai considerar</b><p>'+esc([lead.tipoDesejado,lead.finalidade,lead.bairrosInteresse,lead.faixaMin?'a partir de '+brl0(lead.faixaMin):'',lead.faixaMax?'até '+brl0(lead.faixaMax):'',lead.pagamento,lead.prazo].filter(Boolean).join(" · ")||"Ainda há poucas informações qualificadas; a IA evitará presumir dados.")+'</p></div>':'';
-  const history=lead?(bubbles||'<div class="ia-empty">Nenhuma mensagem foi registrada nesta conversa. Cole abaixo a primeira mensagem recebida.</div>'):'<div class="ia-empty">Escolha um cliente para começar.</div>';
-  return '<div class="ia-page"><div class="ia-page-head"><div><span class="ia-eyebrow">CARTEIRA JM · ASSISTENTE COMERCIAL</span><h2 class="sec">Conversas com IA</h2><p class="sub">Cole o que o cliente escreveu. A IA analisa o cadastro, o imóvel e as mensagens anteriores para sugerir sua próxima resposta.</p></div><span class="ia-secure"><span></span>Resposta sugerida · envio sempre manual</span></div><div class="ia-layout"><aside class="ia-sidebar"><div class="ia-panel"><h3>Atendimento</h3>'+select+details+context+'</div><div class="ia-tip"><b>Como usar</b><ol><li>Selecione o cliente.</li><li>Cole a mensagem recebida.</li><li>Gere a resposta e revise.</li><li>Copie e envie pelo WhatsApp. Depois marque como enviada para manter o contexto correto.</li></ol></div></aside><section class="ia-conversation"><div class="ia-conversation-head"><div><b>'+(lead?esc(lead.nome):'Conversa')+'</b><small>Histórico deste cliente</small></div><span class="spacer"></span><span class="ia-count">'+chat.length+' registros</span></div><div class="ia-thread" id="iaThread">'+history+'</div>'+(lead?'<form class="ia-compose" id="iaChatForm"><label class="ia-label" for="iaIncoming">O que o cliente acabou de mandar?</label><textarea id="iaIncoming" maxlength="5000" placeholder="Cole aqui a mensagem recebida no WhatsApp…" required>'+esc(iaConversaState.incoming)+'</textarea><div class="ia-compose-foot"><small>A IA não envia nada ao cliente. Você revisa, copia e decide quando enviar.</small><button class="btn primary" type="submit" id="iaGenerate" '+(iaConversaState.busy?'disabled':'')+'>'+(iaConversaState.busy?'Analisando conversa…':'Gerar resposta')+'</button></div>'+(iaConversaState.error?'<p class="ia-error">'+esc(iaConversaState.error)+'</p>':'')+'</form>':'<div class="ia-compose ia-compose-disabled"><p>Selecione um cliente no painel ao lado para iniciar.</p></div>')+'</section></div><p class="ia-privacy-note">Para gerar a resposta, os dados comerciais relevantes do lead e o trecho recente da conversa serão enviados à API da OpenAI por uma função protegida no Supabase. Telefone e e-mail não são enviados.</p></div>';
+  const history=lead?(bubbles||'<div class="ia-empty">Nenhuma mensagem foi registrada nesta conversa. Cole abaixo a primeira mensagem ou anexe um print.</div>'):'<div class="ia-empty">Escolha um cliente para começar.</div>';
+  const attachmentPreview=iaConversaState.images.map((img,index)=>'<div class="ia-attachment"><img src="'+esc(img.dataUrl)+'" alt="Prévia do print '+(index+1)+'"><div class="ia-attachment-info"><b>'+esc(img.name)+'</b><small>'+Math.max(1,Math.round(img.size/1024))+' KB</small></div><button class="btn sm" type="button" data-ia-remove-image="'+index+'" aria-label="Remover '+esc(img.name)+'">Remover</button></div>').join('');
+  return '<div class="ia-page"><div class="ia-page-head"><div><span class="ia-eyebrow">CARTEIRA JM · ASSISTENTE COMERCIAL</span><h2 class="sec">Conversas com IA</h2><p class="sub">Digite a mensagem, anexe prints da conversa ou use os dois. A IA analisa o cadastro, o imóvel e o contexto para criar três respostas humanizadas e indicar quais informações ainda precisam ser levantadas.</p></div><span class="ia-secure"><span></span>Resposta sugerida · envio sempre manual</span></div><div class="ia-layout"><aside class="ia-sidebar"><div class="ia-panel"><h3>Atendimento</h3>'+select+details+context+'</div><div class="ia-tip"><b>Como usar</b><ol><li>Selecione o cliente.</li><li>Digite a mensagem recebida e/ou anexe até 4 prints.</li><li>Compare as três opções, escolha a mais natural e revise.</li><li>Copie e envie pelo WhatsApp. Depois marque como enviada para manter o contexto correto.</li></ol></div></aside><section class="ia-conversation"><div class="ia-conversation-head"><div><b>'+(lead?esc(lead.nome):'Conversa')+'</b><small>Histórico deste cliente</small></div><span class="spacer"></span><span class="ia-count">'+chat.length+' registros</span></div><div class="ia-thread" id="iaThread">'+history+'</div>'+(lead?'<form class="ia-compose" id="iaChatForm"><label class="ia-label" for="iaIncoming">Mensagem recebida ou contexto adicional (opcional quando anexar prints)</label><textarea id="iaIncoming" maxlength="5000" placeholder="Digite ou cole aqui o que o cliente mandou no WhatsApp…">'+esc(iaConversaState.incoming)+'</textarea><div class="ia-attach-tools"><label class="btn sm" for="iaImages">＋ Anexar prints</label><input id="iaImages" type="file" accept="image/png,image/jpeg,image/webp" multiple><small>PNG, JPG ou WEBP · até 4 imagens · tamanho total até 6 MB.</small></div>'+(attachmentPreview?'<div class="ia-attachments">'+attachmentPreview+'</div>':'')+'<div class="ia-compose-foot"><small>Os prints são analisados pela IA. O arquivo original não é salvo no CRM; apenas o resumo extraído fica no histórico. Você revisa e envia manualmente.</small><button class="btn primary" type="submit" id="iaGenerate" '+(iaConversaState.busy?'disabled':'')+'>'+(iaConversaState.busy?'Analisando conversa…':'Gerar resposta')+'</button></div>'+(iaConversaState.error?'<p class="ia-error">'+esc(iaConversaState.error)+'</p>':'')+'</form>':'<div class="ia-compose ia-compose-disabled"><p>Selecione um cliente no painel ao lado para iniciar.</p></div>')+'</section></div><p class="ia-privacy-note">Para gerar a resposta, os dados comerciais relevantes do lead, o trecho recente da conversa e os prints selecionados serão enviados à API da OpenAI por uma função protegida no Supabase. Telefone e e-mail não são enviados.</p></div>';
 }
 
 function contextoLeadParaIA(lead){
@@ -2066,22 +2081,50 @@ function contextoLeadParaIA(lead){
   return pick;
 }
 
-async function iaGerarResposta(leadId,incoming){
+function iaLerImagemComoDataURL(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>typeof reader.result==="string"?resolve(reader.result):reject(new Error("Não foi possível ler o print selecionado."));
+    reader.onerror=()=>reject(new Error("Falha ao abrir a imagem "+(file.name||"selecionada")+"."));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function iaGerarResposta(leadId,incoming,images=[]){
   const lead=state.leads.find(l=>String(l.id)===String(leadId));
   if(!lead)throw new Error("Selecione um cliente válido.");
   if(!sessao)throw new Error("Sua sessão expirou. Entre novamente no CRM.");
-  const recent=(lead.notas||[]).filter(n=>n&&["user","sent"].includes(n.chatRole)).slice(0,16).reverse().map(n=>({role:n.chatRole==="user"?"user":"assistant",content:String(n.t||"")}));
-  const {data,error}=await sb.functions.invoke("crm-chat",{body:{lead:contextoLeadParaIA(lead),history:recent,incoming}});
+  const recent=(lead.notas||[]).filter(n=>n&&["user","sent"].includes(n.chatRole)).slice(0,16).reverse().map(n=>({role:n.chatRole==="user"?"user":"assistant",content:[String(n.t||""),n.chatImageContext?"Resumo dos prints anteriores: "+String(n.chatImageContext):""].filter(Boolean).join("\n\n")}));
+  const imagePayload=(images||[]).map(img=>({name:img.name,mimeType:img.mimeType,dataUrl:img.dataUrl}));
+  const {data,error}=await sb.functions.invoke("crm-chat",{body:{lead:contextoLeadParaIA(lead),history:recent,incoming,images:imagePayload}});
   if(error){let msg=error.message||"Falha ao chamar a função crm-chat.";try{const body=await error.context.json();if(body&&body.error)msg=body.error}catch(_){};throw new Error(msg)}
-  if(!data||!data.suggestion||!data.suggestion.message)throw new Error(data&&data.error?data.error:"A IA não retornou uma sugestão válida.");
+  if(!data||!data.suggestion||!Array.isArray(data.suggestion.options)||data.suggestion.options.length!==3)throw new Error(data&&data.error?data.error:"A IA não retornou as três opções de mensagem. Tente novamente.");
   const suggestion=data.suggestion;
-  const chatId=uid(),now=new Date().toISOString();
-  const received={chatId,chatRole:"user",d:now,t:incoming,tipo:"whatsapp",autor:"Cliente"};
-  const draft={chatId,chatRole:"suggestion",d:new Date(Date.now()+1).toISOString(),t:suggestion.message,tipo:"followup",autor:"Sugestão IA (não enviada)",chatMeta:{strategy:suggestion.strategy||"",nextAction:suggestion.next_action||"",question:suggestion.follow_up_question||""}};
-  const updated=Object.assign({},lead,{notas:[draft,received,...(lead.notas||[])]});
+  const now=new Date().toISOString();
+  const imageContext=String(suggestion.image_context||"").trim().slice(0,2400);
+  const receivedId=uid();
+  const received={chatId:receivedId,chatRole:"user",d:now,t:incoming||(imagePayload.length?"Print(s) da conversa anexado(s) para análise.":""),tipo:"whatsapp",autor:"Cliente",chatImagesCount:imagePayload.length,chatImageNames:imagePayload.map(x=>x.name).filter(Boolean),chatImageContext:imageContext};
+  const qualification=suggestion.qualification||{};
+  const pending=Array.isArray(qualification.pending)?qualification.pending.filter(Boolean).join(" · "):"";
+  const drafts=suggestion.options.map((option,index)=>({
+    chatId:uid(),chatGroupId:receivedId,chatOptionIndex:index+1,chatRole:"suggestion",
+    d:new Date(Date.now()+index+1).toISOString(),t:String(option.message||""),tipo:"followup",
+    autor:"Sugestão IA (não enviada)",
+    chatMeta:{
+      optionLabel:String(option.label||("Opção "+(index+1))),
+      rationale:String(option.rationale||""),
+      nextAction:index===0?String(suggestion.next_action||""):"",
+      qualificationKnown:index===0&&Array.isArray(qualification.known)?qualification.known.filter(Boolean).join(" · "):"",
+      qualificationPending:index===0?pending:"",
+      nextQuestion:index===0?String(qualification.next_question||""):""
+    }
+  }));
+  if(drafts.some(d=>!d.t.trim()))throw new Error("Uma das três opções veio vazia. Gere novamente.");
+  const updated=Object.assign({},lead,{notas:[...drafts,received,...(lead.notas||[])]});
   await salvar("leads",updated,{silencioso:true});
-  iaConversaState.lastSuggestion={leadId,chatId,message:suggestion.message};
+  iaConversaState.lastSuggestion={leadId,chatIds:drafts.map(d=>d.chatId),messages:drafts.map(d=>d.t)};
   iaConversaState.incoming="";
+  iaConversaState.images=[];
   return suggestion;
 }
 
@@ -2762,19 +2805,43 @@ function bindView(){
   app.querySelectorAll("[data-receber]").forEach(b=>b.onclick=async e=>{e.stopPropagation();const v=state.vendas.find(x=>x.id===b.dataset.receber);if(!v)return;const n=b.dataset.quem;const rec=Object.assign({},v.recebido||{});const em=Object.assign({},v.recebidoEm||{});rec[n]=!rec[n];em[n]=rec[n]?hoje():"";try{await salvar("vendas",Object.assign({},v,{recebido:rec,recebidoEm:em,alteradoPor:eu()}));toast(rec[n]?"Marcado como recebido":"Voltou para a receber")}catch(_){}});
   const iaThread=app.querySelector("#iaThread"); if(iaThread)iaThread.scrollTop=iaThread.scrollHeight;
   const iaLeadSelect=app.querySelector("#iaLeadSelect");
-  if(iaLeadSelect)iaLeadSelect.onchange=()=>{iaConversaState.leadId=iaLeadSelect.value;iaConversaState.incoming="";iaConversaState.error="";iaConversaState.lastSuggestion=null;render()};
+  if(iaLeadSelect)iaLeadSelect.onchange=()=>{iaConversaState.leadId=iaLeadSelect.value;iaConversaState.incoming="";iaConversaState.images=[];iaConversaState.error="";iaConversaState.lastSuggestion=null;render()};
   const iaOpenLead=app.querySelector("#iaOpenLead");
   if(iaOpenLead)iaOpenLead.onclick=()=>{if(iaConversaState.leadId)abrirLead(iaConversaState.leadId,"historico")};
+  const iaIncoming=app.querySelector("#iaIncoming");
+  if(iaIncoming)iaIncoming.oninput=()=>{iaConversaState.incoming=iaIncoming.value};
+  const iaImages=app.querySelector("#iaImages");
+  if(iaImages)iaImages.onchange=async()=>{
+    const files=Array.from(iaImages.files||[]);iaImages.value="";
+    if(!files.length)return;
+    const allowed=["image/png","image/jpeg","image/webp"];
+    const maxCount=4,maxEach=3*1024*1024,maxTotal=6*1024*1024;
+    if(iaConversaState.images.length+files.length>maxCount){toast("Anexe no máximo 4 prints por vez.");return}
+    let total=iaConversaState.images.reduce((sum,x)=>sum+(x.size||0),0);
+    for(const file of files){
+      if(!allowed.includes(file.type)){toast("Formato não suportado. Use PNG, JPG ou WEBP.");return}
+      if(file.size>maxEach){toast("Cada print deve ter no máximo 3 MB.");return}
+      total+=file.size;
+    }
+    if(total>maxTotal){toast("O conjunto de prints deve ter no máximo 6 MB.");return}
+    try{
+      const additions=[];
+      for(const file of files)additions.push({name:file.name||"print-conversa",mimeType:file.type,size:file.size,dataUrl:await iaLerImagemComoDataURL(file)});
+      iaConversaState.images=[...iaConversaState.images,...additions];iaConversaState.error="";render();
+    }catch(err){iaConversaState.error=err&&err.message?err.message:"Não foi possível carregar os prints.";render()}
+  };
+  app.querySelectorAll("[data-ia-remove-image]").forEach(b=>b.onclick=()=>{iaConversaState.images.splice(Number(b.dataset.iaRemoveImage),1);render()});
   const iaForm=app.querySelector("#iaChatForm");
   if(iaForm)iaForm.onsubmit=async e=>{
     e.preventDefault();
     const input=app.querySelector("#iaIncoming");
     const value=String(input&&input.value||"").trim();
+    const images=iaConversaState.images.slice();
     if(!iaConversaState.leadId){toast("Selecione um cliente primeiro.");return}
-    if(!value){toast("Cole a mensagem que o cliente enviou.");return}
+    if(!value&&!images.length){toast("Digite a mensagem recebida ou anexe pelo menos um print.");return}
     if(iaConversaState.busy)return;
     iaConversaState.incoming=value;iaConversaState.busy=true;iaConversaState.error="";render();
-    try{await iaGerarResposta(iaConversaState.leadId,value)}
+    try{await iaGerarResposta(iaConversaState.leadId,value,images)}
     catch(err){iaConversaState.error=err&&err.message?err.message:"Não foi possível gerar a resposta.";iaConversaState.incoming=value}
     finally{iaConversaState.busy=false;render()}
   };
