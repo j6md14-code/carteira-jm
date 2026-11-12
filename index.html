@@ -1595,6 +1595,14 @@ dialog#dlg{
 }
 </style>
 
+<style id="jm-v13-mobile-lead-tabs-fix">
+/* V13 — corrige a troca das abas no cadastro de leads em telas mobile.
+   A regra mobile anterior forçava display:grid inclusive nos painéis ocultos. */
+@media (max-width:760px){
+  #dlg .body > .pane:not([hidden]){display:grid!important;}
+  #dlg .body > .pane[hidden]{display:none!important;}
+}
+</style>
 </head>
 <body>
 
