@@ -1733,6 +1733,22 @@ dialog#dlg{
 @media(max-width:560px){.estudio-side{grid-template-columns:1fr}.estudio-head{align-items:flex-start}.estudio-main{border-radius:14px;min-height:70vh}.estudio-modes{gap:5px;padding:10px}.estudio-mode{padding:7px 10px;font-size:.74rem}.estudio-mode-note{width:100%;margin-left:2px}.estudio-thread{padding:12px;min-height:280px;max-height:48vh}.estudio-msg{max-width:96%;padding:11px 12px}.estudio-compose{padding:11px}.estudio-compose-foot .btn.primary{width:100%}.estudio-compose textarea{font-size:16px!important}}
 </style>
 
+
+<style id="jm-estudio-layout-template">
+.estudio-layout-card{border-color:rgba(221,175,66,.36)!important;background:linear-gradient(155deg,rgba(42,33,19,.80),var(--jm-glass, var(--surface)))!important}
+.estudio-layout-preview{display:grid;grid-template-columns:92px minmax(0,1fr);gap:11px;align-items:center;margin:10px 0;padding:9px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.estudio-layout-preview img{display:block;width:92px;height:112px;object-fit:cover;border-radius:8px;background:#111;border:1px solid var(--line)}
+.estudio-layout-preview b{display:block;color:var(--ink);font-size:.82rem;overflow-wrap:anywhere}
+.estudio-layout-preview small{display:block;color:var(--muted);font-size:.7rem;line-height:1.45;margin-top:4px}
+.estudio-layout-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.estudio-layout-toggle{display:flex;gap:9px;align-items:flex-start;margin-top:10px;padding:10px;border:1px solid var(--accent-line);border-radius:10px;background:var(--accent-soft);font-size:.78rem;line-height:1.4;color:var(--ink)}
+.estudio-layout-toggle input{margin:2px 0 0;accent-color:var(--accent);flex:0 0 auto}
+.estudio-layout-note{font-size:.72rem;line-height:1.5;color:var(--muted);margin:8px 0 0}
+.estudio-layout-active{display:inline-flex;align-items:center;gap:6px;color:#79D39B;font-size:.72rem;font-weight:800;margin-top:5px}
+.estudio-layout-active:before{content:"";width:7px;height:7px;border-radius:50%;background:#57BD83}
+@media(max-width:820px){.estudio-layout-preview{grid-template-columns:80px minmax(0,1fr)}.estudio-layout-preview img{width:80px;height:98px}}
+</style>
+
 </head>
 <body>
 
@@ -1860,7 +1876,7 @@ let vPeriodo="ano";
 let view="painel", periodo="30", periodoInicio="", periodoFim="", fTemp="todos", fEtapa="ativos", fImovel="todos", fBusca="", fRetorno=false, fOrdem="quentes", fAnuncios="todos", scat="todos";
 let sb=null, sessao=null, canal=null, entrouId=null;
 const iaConversaState={leadId:"",incoming:"",images:[],audios:[],busy:false,lastSuggestion:null,currentOptions:[],error:""};
-const estudioIAState={mode:"chat",input:"",imovelId:"",images:[],messages:[],loaded:false,busy:false,error:"",size:"1024x1280",quality:"high",lastImage:null};
+const estudioIAState={mode:"chat",input:"",imovelId:"",images:[],messages:[],loaded:false,busy:false,error:"",size:"1024x1280",quality:"high",lastImage:null,layoutReference:null,layoutLoaded:false,useDefaultLayout:true};
 const eu=()=>CORRETOR;
 const LOGOS={"pablo rodrigues":"logo-mark-pablo.png"};
 function aplicarMarca(){const h=document.getElementById("brandNome");if(h)h.textContent=CORRETOR;const im=document.querySelector("img.mono");if(im){const src=LOGOS[String(CORRETOR).toLowerCase()]||"logo-mark.png";if(im.getAttribute("src")!==src)im.setAttribute("src",src);im.alt="Logo "+CORRETOR}}
@@ -2322,6 +2338,44 @@ function estudioSalvarHistorico(){
     localStorage.setItem(estudioStorageKey(),JSON.stringify(safe));
   }catch(_){toast("O histórico desta conversa não coube no armazenamento deste navegador.")}
 }
+function estudioLayoutStorageKey(){return estudioStorageKey()+"-layout-padrao"}
+function estudioCarregarLayout(){
+  if(estudioIAState.layoutLoaded)return;
+  estudioIAState.layoutLoaded=true;
+  try{
+    const saved=JSON.parse(localStorage.getItem(estudioLayoutStorageKey())||"null");
+    if(saved&&typeof saved.dataUrl==="string"&&saved.dataUrl.startsWith("data:image/"))estudioIAState.layoutReference={name:String(saved.name||"layout-padrao.jpg"),dataUrl:saved.dataUrl,mimeType:"image/jpeg"};
+    const enabled=localStorage.getItem(estudioLayoutStorageKey()+"-enabled");
+    if(enabled!==null)estudioIAState.useDefaultLayout=enabled==="true";
+  }catch(_){estudioIAState.layoutReference=null}
+}
+function estudioSalvarLayoutDataUrl(dataUrl,name){
+  if(!dataUrl||!dataUrl.startsWith("data:image/"))throw new Error("A referência do layout não é uma imagem válida.");
+  const record={name:String(name||"layout-padrao.jpg").slice(0,160),dataUrl};
+  try{localStorage.setItem(estudioLayoutStorageKey(),JSON.stringify(record));}
+  catch(_){throw new Error("Não foi possível salvar o layout neste navegador. Use uma imagem menor ou reduza a resolução.");}
+  estudioIAState.layoutReference={name:record.name,dataUrl:record.dataUrl,mimeType:"image/jpeg"};
+}
+function estudioRemoverLayout(){
+  try{localStorage.removeItem(estudioLayoutStorageKey());localStorage.removeItem(estudioLayoutStorageKey()+"-enabled")}catch(_){}
+  estudioIAState.layoutReference=null;estudioIAState.useDefaultLayout=true;render();toast("Layout padrão removido. Você pode cadastrar outro quando quiser.");
+}
+async function estudioComprimirLayout(file){
+  if(!file||!/^image\/(png|jpeg|webp)$/.test(file.type))throw new Error("Use uma imagem PNG, JPG ou WEBP para o layout padrão.");
+  if(file.size>12*1024*1024)throw new Error("O layout de referência deve ter no máximo 12 MB.");
+  const source=await estudioImagemDataUrl(file);
+  const image=new Image();
+  await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(new Error("Não foi possível abrir a imagem do layout."));image.src=source});
+  const max=1600,scale=Math.min(1,max/Math.max(image.naturalWidth,image.naturalHeight));
+  const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+  const ctx=canvas.getContext("2d");if(!ctx)throw new Error("Não foi possível preparar a imagem do layout.");
+  ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);
+  return canvas.toDataURL("image/jpeg",.84);
+}
+async function estudioDataUrlParaFile(dataUrl,name){
+  const response=await fetch(dataUrl);const blob=await response.blob();
+  return new File([blob],name||"layout-padrao.jpg",{type:blob.type||"image/jpeg"});
+}
 function estudioLerDadosImovel(id){
   const i=(state.imoveis||[]).find(x=>String(x.id)===String(id));
   if(!i)return null;
@@ -2337,14 +2391,16 @@ function estudioNomeModo(){return ({chat:"Conversa",copy:"Textos de anúncio",ge
 function estudioHora(v){const d=new Date(v||Date.now());return d.toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
 function vEstudioIA(){
   estudioCarregarHistorico();
+  estudioCarregarLayout();
   const imovel=(state.imoveis||[]).find(i=>String(i.id)===String(estudioIAState.imovelId))||null;
   const propertyOptions='<option value="">Sem imóvel específico</option>'+(state.imoveis||[]).map(i=>'<option value="'+esc(i.id)+'"'+(imovel&&String(i.id)===String(imovel.id)?' selected':'')+'>'+esc(i.titulo||"Imóvel")+(i.codigo?' · '+esc(i.codigo):'')+'</option>').join("");
   const msgs=estudioIAState.messages.map((m,index)=>{
     const actions=m.role==="assistant"&&m.kind!=="image"?`<div class="estudio-msg-actions"><button class="btn sm" type="button" data-est-copy="${index}">Copiar texto</button></div>`:"";
-    const image=m.kind==="image"?(m.imageDataUrl?`<img class="estudio-msg-image" src="${m.imageDataUrl}" alt="Imagem gerada pela IA"><div class="estudio-msg-actions"><a class="btn sm primary" download="criativo-carteira-jm.png" href="${m.imageDataUrl}">Baixar imagem</a><button class="btn sm" type="button" data-est-use-image="${index}">Usar como referência para editar</button></div>`:`<div class="estudio-msg-missing">Imagem gerada anteriormente. Baixe a imagem antes de sair desta sessão para mantê-la disponível.</div>`):"";
+    const image=m.kind==="image"?(m.imageDataUrl?`<img class="estudio-msg-image" src="${m.imageDataUrl}" alt="Imagem gerada pela IA"><div class="estudio-msg-actions"><a class="btn sm primary" download="criativo-carteira-jm.png" href="${m.imageDataUrl}">Baixar imagem</a><button class="btn sm" type="button" data-est-use-image="${index}">Usar como referência para editar</button><button class="btn sm" type="button" data-est-set-layout="${index}">Definir como layout padrão</button></div>`:`<div class="estudio-msg-missing">Imagem gerada anteriormente. Baixe a imagem antes de sair desta sessão para mantê-la disponível.</div>`):"";
     return `<article class="estudio-msg ${m.role==="user"?"user":"assistant"}"><div class="estudio-msg-head">${m.role==="user"?"Você":"Estúdio IA"}<span class="estudio-msg-time">${esc(estudioHora(m.time))}</span></div>${m.text?`<div>${esc(m.text)}</div>`:""}${image}${actions}</article>`;
   }).join("");
   const uploads=estudioIAState.images.map((img,index)=>`<div class="estudio-file"><img src="${img.dataUrl}" alt="Imagem de referência ${index+1}"><div class="estudio-file-foot"><b>${esc(img.name)}</b><button type="button" class="btn sm danger" data-est-remove-image="${index}" aria-label="Remover imagem">×</button></div></div>`).join("");
+  const layoutPreview=estudioIAState.layoutReference?`<div class="estudio-layout-preview"><img src="${estudioIAState.layoutReference.dataUrl}" alt="Layout padrão salvo"><div><b>${esc(estudioIAState.layoutReference.name)}</b><small>Esta arte será usada como referência visual nas gerações e edições quando a opção estiver ativada.</small><span class="estudio-layout-active">${estudioIAState.useDefaultLayout?"Aplicando por padrão":"Salvo, mas desativado"}</span></div></div>`:`<div class="estudio-layout-preview"><div style="width:92px;height:112px;display:grid;place-items:center;border:1px dashed var(--accent-line);border-radius:8px;color:var(--accent);font-size:1.8rem">✦</div><div><b>Nenhum layout padrão cadastrado</b><small>Carregue a arte que você enviou como modelo. Ela ficará salva neste navegador para servir de base nas próximas criações.</small></div></div>`;
   const modeText={chat:"Converse com a IA sobre campanhas, posicionamento, ideias de criativos e estratégias para seus anúncios.",copy:"Crie títulos, textos principais e descrições para anúncios imobiliários, usando somente os dados confirmados do imóvel.",generate:"Descreva a arte que deseja. Se anexar fotos de referência, a IA poderá usá-las como base visual para o criativo.",edit:"Anexe uma foto do imóvel e descreva exatamente o que deseja alterar. A edição deve preservar a identidade e as características reais do imóvel."}[estudioIAState.mode];
   const propertyInfo=imovel?`<div class="estudio-property-info"><b>${esc(imovel.titulo)}</b><br>${esc([imovel.codigo,imovel.status,imovel.tipo,imovel.bairro,imovel.quartos?imovel.quartos+" quartos":""].filter(Boolean).join(" · "))}<br>${brl0(imovel.valor)}<br><small>A IA receberá os dados cadastrados, sem presumir características ausentes.</small></div>`:`<div class="estudio-property-info">Selecione um imóvel para usar título, código, status, valor, tipo, bairro e características que estejam cadastradas.</div>`;
   const placeholder=estudioIAState.mode==="copy"?"Ex.: Crie 3 títulos, 2 textos principais e 2 descrições para este imóvel…":estudioIAState.mode==="generate"?"Ex.: Crie uma arte premium para Instagram, destacando o imóvel e mantendo as fotos realistas…":estudioIAState.mode==="edit"?"Ex.: Melhore a iluminação, remova objetos que distraem e mantenha a arquitetura original…":"Ex.: Quero uma campanha para divulgar os imóveis de médio padrão em Rio Claro…";
@@ -2385,6 +2441,7 @@ function vEstudioIA(){
         </section>
         <aside class="estudio-side">
           <div class="estudio-side-card"><h3>Contexto do anúncio</h3><label for="estudioImovel">Usar imóvel cadastrado</label><select id="estudioImovel">${propertyOptions}</select>${propertyInfo}</div>
+          <div class="estudio-side-card estudio-layout-card"><h3>Layout padrão</h3><p class="estudio-layout-note" style="margin-top:0">Este é o modelo visual que a IA deve seguir por padrão: composição, posição dos textos, cores, fontes e identidade do anúncio.</p>${layoutPreview}<div class="estudio-layout-actions"><label class="btn sm primary" for="estudioLayoutFile">${estudioIAState.layoutReference?"Trocar layout padrão":"Definir layout padrão"}</label><input id="estudioLayoutFile" type="file" accept="image/png,image/jpeg,image/webp" style="display:none">${estudioIAState.layoutReference?'<button class="btn sm danger" type="button" id="estudioLayoutRemove">Remover</button>':''}</div><label class="estudio-layout-toggle"><input id="estudioUseDefaultLayout" type="checkbox" ${estudioIAState.useDefaultLayout?'checked':''}><span><b>Aplicar este layout automaticamente</b><br>Use como base em gerar imagem e editar foto. Seu pedido específico sempre poderá mudar qualquer elemento.</span></label><p class="estudio-layout-note">Com o modelo salvo, anexe a nova foto e escreva “coloque o layout nessa foto” ou “vou usar essa foto para um anúncio”. O Estúdio aplicará o layout automaticamente e trocará a foto de fundo. Você também pode pedir para alterar preço, textos, cores, fontes, posições ou qualquer outro elemento; o restante do modelo será preservado.</p></div>
           <div class="estudio-side-card"><h3>Formato da imagem</h3><label for="estudioSize">Proporção para anúncio</label><select id="estudioSize"><option value="1024x1024" ${estudioIAState.size==="1024x1024"?"selected":""}>Quadrado · 1:1</option><option value="1024x1280" ${estudioIAState.size==="1024x1280"?"selected":""}>Feed vertical · 4:5</option><option value="1024x1792" ${estudioIAState.size==="1024x1792"?"selected":""}>Stories/Reels · 9:16</option><option value="1536x864" ${estudioIAState.size==="1536x864"?"selected":""}>Horizontal · 16:9</option></select><label for="estudioQuality">Qualidade</label><select id="estudioQuality"><option value="medium" ${estudioIAState.quality==="medium"?"selected":""}>Média · rascunho</option><option value="high" ${estudioIAState.quality==="high"?"selected":""}>Alta · recomendada</option><option value="xhigh" ${estudioIAState.quality==="xhigh"?"selected":""}>Muito alta</option></select><div class="estudio-cost">A geração e a edição de imagens consomem créditos da API da OpenAI. Use qualidade média para testar ideias e alta para versões finais.</div></div>
           <div class="estudio-side-card"><h3>Direção criativa</h3><div class="estudio-tip"><b>Para fotos de imóveis</b><br>Peça melhorias de luz, enquadramento e limpeza visual. A IA deve preservar a arquitetura real, sem inventar ambientes, acabamentos ou características.<br><br><b>Para textos</b><br>Peça títulos, textos principais, descrições e chamadas para ação. A IA não deve criar preços, metragem, condições ou diferenciais que não estejam confirmados.</div></div>
         </aside>
@@ -2397,15 +2454,18 @@ function estudioImagemDataUrl(file){
 function estudioSaidaTexto(body){
   return (body.output||[]).filter(item=>item&&item.type==='message').flatMap(item=>Array.isArray(item.content)?item.content:[]).filter(part=>part&&part.type==='output_text').map(part=>String(part.text||'')).join('\n').trim();
 }
-async function estudioExecutar(action,prompt,images){
+async function estudioExecutar(action,prompt,images,forceDefaultLayout=false){
   if(!sessao)throw new Error('Sua sessão do CRM expirou. Entre novamente.');
   const property=estudioLerDadosImovel(estudioIAState.imovelId);
   const history=(estudioIAState.messages||[]).slice(-12).map(m=>({role:m.role==='assistant'?'assistant':'user',content:String(m.text||'').slice(0,6000)}));
-  const payload={action,message:prompt,history,property,size:estudioIAState.size,quality:estudioIAState.quality};
+  const hasSavedLayout=!!(estudioIAState.layoutReference&&estudioIAState.layoutReference.dataUrl);
+  const useDefaultLayout=(action==='generate'||action==='edit')&&hasSavedLayout&&(forceDefaultLayout||estudioIAState.useDefaultLayout);
+  const payload={action,message:prompt,history,property,size:estudioIAState.size,quality:estudioIAState.quality,useDefaultLayout};
   let body=payload;
-  if(images&&images.length){
+  if((images&&images.length)||useDefaultLayout){
     const form=new FormData();form.append('payload',JSON.stringify(payload));
-    images.forEach((img,index)=>form.append('image',img.file,'referencia-'+(index+1)+(img.file.name.match(/\.[a-zA-Z0-9]+$/)||['.jpg'])[0]));
+    if(useDefaultLayout){const layoutFile=await estudioDataUrlParaFile(estudioIAState.layoutReference.dataUrl,estudioIAState.layoutReference.name||'layout-padrao.jpg');form.append('layout',layoutFile,'layout-padrao.jpg')}
+    (images||[]).forEach((img,index)=>form.append('image',img.file,'referencia-'+(index+1)+(img.file.name.match(/\.[a-zA-Z0-9]+$/)||['.jpg'])[0]));
     body=form;
   }
   const {data,error}=await sb.functions.invoke('crm-creative',{body});
@@ -2418,28 +2478,44 @@ async function estudioExecutar(action,prompt,images){
   if(!data.reply)throw new Error(data.error||'A IA não retornou uma resposta.');
   return {kind:'text',text:String(data.reply)};
 }
+function estudioEhComandoLayoutPadrao(value){
+  const normalized=String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[.,!?;:]+/g,' ').replace(/\s+/g,' ').trim();
+  if(!normalized)return false;
+  const commands=[
+    /\b(coloque|colocar|aplique|aplicar|ponha|usar|use|utilize)\b.{0,38}\b(layout|modelo|padrao)\b.{0,42}\b(foto|imagem)\b/,
+    /\b(layout|modelo|padrao)\b.{0,42}\b(nessa|nesta|na|sobre a|em cima da)\b.{0,18}\b(foto|imagem)\b/,
+    /\b(vou usar|quero usar|use|utilize)\b.{0,35}\b(essa|esta|a)\s+(foto|imagem)\b.{0,45}\b(anuncio|criativo|arte)\b/,
+    /\b(foto|imagem)\b.{0,35}\b(layout|modelo|padrao)\b/
+  ];
+  return commands.some(re=>re.test(normalized));
+}
 async function estudioEnviar(){
   if(estudioIAState.busy)return;
   const prompt=String(estudioIAState.input||'').trim();
   const images=estudioIAState.images.slice();
   const mode=estudioIAState.mode;
-  if(!prompt&&!(images.length&&mode==='edit')){toast('Escreva o que deseja criar ou editar.');return}
-  if(mode==='edit'&&!images.length){toast('Anexe ao menos uma foto para editar.');return}
-  if((mode==='generate'||mode==='edit')&&images.length>4){toast('Use no máximo 4 imagens de referência.');return}
-  const userText=prompt||(mode==='edit'?'Edite a foto anexada conforme a orientação padrão.':'');
-  estudioIAState.messages.push({role:'user',text:userText+(images.length?'\n\nImagens anexadas: '+images.map(x=>x.name).join(', '):''),kind:'text',time:new Date().toISOString()});
+  const forceDefaultLayout=estudioEhComandoLayoutPadrao(prompt);
+  // Comando em linguagem natural: não é necessário trocar manualmente para "Editar foto".
+  const action=forceDefaultLayout?'edit':(mode==='copy'?'copy':mode);
+  if(forceDefaultLayout&&!images.length){toast('Anexe primeiro a foto do imóvel. Depois escreva “coloque o layout nessa foto” ou “vou usar essa foto para um anúncio”.');return}
+  if(forceDefaultLayout&&!estudioIAState.layoutReference){toast('Antes, salve sua arte-modelo na seção “Layout padrão” usando “Definir layout padrão”. Depois esse comando aplicará o modelo automaticamente.');return}
+  if(!prompt&&!(images.length&&action==='edit')){toast('Escreva o que deseja criar ou editar.');return}
+  if(action==='edit'&&!images.length){toast('Anexe uma foto para editar.');return}
+  if((action==='generate'||action==='edit')&&images.length>4){toast('Use no máximo 4 imagens de referência.');return}
+  const userText=prompt||(action==='edit'?'Edite a foto anexada conforme a orientação padrão.':'');
+  const layoutUsed=(action==='generate'||action==='edit')&&!!estudioIAState.layoutReference&&(forceDefaultLayout||estudioIAState.useDefaultLayout);
+  estudioIAState.messages.push({role:'user',text:userText+(layoutUsed?'\n\nLayout padrão aplicado: '+estudioIAState.layoutReference.name:'')+(images.length?'\n\nImagens anexadas: '+images.map(x=>x.name).join(', '):''),kind:'text',time:new Date().toISOString()});
   estudioSalvarHistorico();
   estudioIAState.busy=true;estudioIAState.error='';estudioIAState.input='';render();
   try{
-    const action=mode==='copy'?'copy':mode;
-    const result=await estudioExecutar(action,userText,images);
+    const result=await estudioExecutar(action,userText,images,forceDefaultLayout);
     const msg={role:'assistant',text:result.text,kind:result.kind,time:new Date().toISOString()};
     if(result.imageDataUrl){msg.imageDataUrl=result.imageDataUrl;estudioIAState.lastImage=result.imageDataUrl}
     estudioIAState.messages.push(msg);estudioSalvarHistorico();
     estudioIAState.images=[];
   }catch(err){
     estudioIAState.error=err&&err.message?err.message:'Não foi possível concluir a solicitação.';
-    // Recoloca prompt e anexos para permitir corrigir e tentar novamente.
+    // Recoloca o pedido e mantém os anexos para permitir corrigir e tentar novamente.
     estudioIAState.input=prompt;
   }finally{estudioIAState.busy=false;render()}
 }
@@ -3190,6 +3266,9 @@ function bindView(){
   const estudioPrompt=$("#estudioPrompt");if(estudioPrompt)estudioPrompt.oninput=()=>{estudioIAState.input=estudioPrompt.value};
   app.querySelectorAll("[data-est-mode]").forEach(b=>b.onclick=()=>{if(estudioIAState.busy)return;estudioIAState.mode=b.dataset.estMode;estudioIAState.error="";render()});
   const estudioImovel=$("#estudioImovel");if(estudioImovel)estudioImovel.onchange=()=>{estudioIAState.imovelId=estudioImovel.value;render()};
+  const estudioUseDefaultLayout=$("#estudioUseDefaultLayout");if(estudioUseDefaultLayout)estudioUseDefaultLayout.onchange=()=>{estudioIAState.useDefaultLayout=!!estudioUseDefaultLayout.checked;try{localStorage.setItem(estudioLayoutStorageKey()+"-enabled",String(estudioIAState.useDefaultLayout))}catch(_){};render()};
+  const estudioLayoutFile=$("#estudioLayoutFile");if(estudioLayoutFile)estudioLayoutFile.onchange=async()=>{const file=estudioLayoutFile.files&&estudioLayoutFile.files[0];estudioLayoutFile.value="";if(!file)return;try{const dataUrl=await estudioComprimirLayout(file);estudioSalvarLayoutDataUrl(dataUrl,file.name||"layout-padrao.jpg");estudioIAState.useDefaultLayout=true;try{localStorage.setItem(estudioLayoutStorageKey()+"-enabled","true")}catch(_){};toast("Layout padrão salvo neste navegador.");render()}catch(err){toast(err&&err.message?err.message:"Não foi possível salvar o layout padrão.")}};
+  const estudioLayoutRemove=$("#estudioLayoutRemove");if(estudioLayoutRemove)estudioLayoutRemove.onclick=()=>{if(confirm("Remover o layout padrão salvo? Isso não apaga imagens já geradas."))estudioRemoverLayout()};
   const estudioSize=$("#estudioSize");if(estudioSize)estudioSize.onchange=()=>{estudioIAState.size=estudioSize.value};
   const estudioQuality=$("#estudioQuality");if(estudioQuality)estudioQuality.onchange=()=>{estudioIAState.quality=estudioQuality.value};
   const estudioFiles=$("#estudioFiles");if(estudioFiles)estudioFiles.onchange=async()=>{
@@ -3204,6 +3283,7 @@ function bindView(){
   app.querySelectorAll("[data-est-remove-image]").forEach(b=>b.onclick=()=>{estudioIAState.images.splice(Number(b.dataset.estRemoveImage),1);render()});
   app.querySelectorAll("[data-est-copy]").forEach(b=>b.onclick=()=>{const m=estudioIAState.messages[Number(b.dataset.estCopy)];if(m&&m.text)copiar(m.text)});
   app.querySelectorAll("[data-est-use-image]").forEach(b=>b.onclick=async()=>{const m=estudioIAState.messages[Number(b.dataset.estUseImage)];if(!m||!m.imageDataUrl)return;try{const response=await fetch(m.imageDataUrl);const blob=await response.blob();const file=new File([blob],"criativo-gerado.png",{type:blob.type||"image/png"});estudioIAState.images=[{file,name:file.name,size:file.size,dataUrl:m.imageDataUrl}];estudioIAState.mode="edit";estudioIAState.input="Aprimore esta arte mantendo a composição e os dados do imóvel. ";render()}catch(_){toast("Não foi possível reutilizar esta imagem. Baixe-a e anexe novamente.")}});
+  app.querySelectorAll("[data-est-set-layout]").forEach(b=>b.onclick=async()=>{const m=estudioIAState.messages[Number(b.dataset.estSetLayout)];if(!m||!m.imageDataUrl)return;try{const compressed=await (async()=>{const response=await fetch(m.imageDataUrl);const blob=await response.blob();const file=new File([blob],"layout-gerado.png",{type:blob.type||"image/png"});return await estudioComprimirLayout(file)})();estudioSalvarLayoutDataUrl(compressed,"layout-gerado-pelo-estudio.jpg");estudioIAState.useDefaultLayout=true;try{localStorage.setItem(estudioLayoutStorageKey()+"-enabled","true")}catch(_){};toast("Imagem definida como layout padrão.");render()}catch(err){toast(err&&err.message?err.message:"Não foi possível definir o layout padrão.")}});
   const estudioForm=$("#estudioForm");if(estudioForm)estudioForm.onsubmit=async e=>{e.preventDefault();estudioIAState.input=String($("#estudioPrompt")?.value||estudioIAState.input||"");await estudioEnviar()};
   const estudioClear=$("#estudioClear");if(estudioClear)estudioClear.onclick=estudioLimpar;
   const imp=$("#impFile"); if(imp)imp.onchange=()=>{if(imp.files&&imp.files[0])importarBackup(imp.files[0]);imp.value=""};
