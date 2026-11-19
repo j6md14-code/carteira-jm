@@ -2091,6 +2091,126 @@ html.jm-desktop-crm-mode,html.jm-desktop-crm-mode body{min-height:100%;overflow-
 }
 </style>
 
+<style id="jm-fix-estudio-and-actions-20261119">
+/* Corrige a estrutura do Estúdio: cabeçalho acima e conversa + painel lateral abaixo. */
+#app .estudio-page{display:block!important;grid-template-columns:none!important;max-width:1600px!important}
+#app .estudio-head{display:flex!important;grid-column:auto!important;width:100%!important;margin:2px 0 18px!important}
+#app .estudio-layout{display:grid!important;grid-template-columns:minmax(0,1fr) 310px!important;gap:14px!important;align-items:start!important;width:100%!important}
+#app .estudio-main{display:flex!important;flex-direction:column!important;min-width:0!important;min-height:68vh!important;visibility:visible!important;opacity:1!important}
+#app .estudio-thread{display:flex!important;flex-direction:column!important;min-height:300px!important;max-height:52vh!important;visibility:visible!important}
+#app .estudio-compose{display:block!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:2!important}
+#app .estudio-quick-actions,#app .estudio-composer-shell,#app .estudio-composer-row{display:flex!important;visibility:visible!important}
+#app #estudioPrompt{display:block!important;visibility:visible!important;opacity:1!important;min-height:42px!important}
+#app #estudioAddFile,#app #estudioSend{display:grid!important;visibility:visible!important}
+#app .jm-module-head .jm-module-actions{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important}
+@media(max-width:820px){
+ #app .estudio-layout{grid-template-columns:minmax(0,1fr)!important}
+ #app .estudio-main{min-height:60vh!important}
+ #app .estudio-thread{min-height:260px!important;max-height:50vh!important}
+ #app .estudio-compose{padding:10px!important}
+ #app .estudio-composer-row{display:flex!important}
+ #app #estudioPrompt{font-size:16px!important}
+}
+</style>
+
+<style id="jm-estudio-desktop-layout-fix">
+/* Corrige a grade global que deslocava o cabeçalho e escondia o compositor no desktop. */
+#app .estudio-page{
+  display:block!important;
+  width:100%!important;
+  max-width:1600px!important;
+  min-width:0!important;
+}
+#app .estudio-head{
+  display:flex!important;
+  width:100%!important;
+  margin:2px 0 18px!important;
+}
+#app .estudio-layout{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(270px,300px)!important;
+  gap:14px!important;
+  align-items:stretch!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#app .estudio-main{
+  display:flex!important;
+  flex-direction:column!important;
+  min-width:0!important;
+  min-height:620px!important;
+  height:auto!important;
+  overflow:hidden!important;
+}
+#app .estudio-thread{
+  display:flex!important;
+  flex:1 1 auto!important;
+  min-height:360px!important;
+  max-height:calc(100dvh - 390px)!important;
+  overflow-y:auto!important;
+}
+#app .estudio-compose{
+  display:block!important;
+  position:relative!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:visible!important;
+}
+#app .estudio-quick-actions,
+#app .estudio-composer-shell,
+#app .estudio-composer-row,
+#app #estudioPrompt,
+#app #estudioAddFile,
+#app #estudioSend{
+  visibility:visible!important;
+  opacity:1!important;
+}
+#app .estudio-composer-shell{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#app .estudio-composer-row{
+  display:flex!important;
+  align-items:flex-end!important;
+  gap:9px!important;
+  min-width:0!important;
+}
+#app .estudio-composer-row textarea{
+  display:block!important;
+  flex:1 1 auto!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:46px!important;
+  max-height:160px!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--ink)!important;
+  resize:vertical!important;
+}
+#app .estudio-add-btn,#app .estudio-send-btn{
+  display:grid!important;
+  flex:0 0 42px!important;
+  width:42px!important;
+  height:42px!important;
+  visibility:visible!important;
+}
+#app .estudio-side{
+  display:flex!important;
+  flex-direction:column!important;
+  min-width:0!important;
+}
+@media(max-width:1050px) and (min-width:761px){
+  #app .estudio-layout{grid-template-columns:minmax(0,1fr) 270px!important}
+}
+@media(max-width:760px){
+  #app .estudio-layout{grid-template-columns:minmax(0,1fr)!important}
+  #app .estudio-main{min-height:68vh!important}
+  #app .estudio-thread{min-height:270px!important;max-height:50vh!important}
+}
+</style>
 </head>
 <body>
 
@@ -3013,7 +3133,7 @@ function jmModuleHead(title,subtitle,actions=""){
 function vClientesJM(){
   // Clientes são contatos que já chegaram a uma venda ou foram marcados como fechados.
   const byKey=new Map();
-  state.leads.filter(l=>l.etapa==="fechado").forEach(l=>{
+  state.leads.filter(l=>l.etapa==="fechado"||l.cadastroManualCliente===true).forEach(l=>{
     const key=digitos(l.telefone)||String(l.email||l.nome||l.id).toLowerCase();
     byKey.set(key,{nome:l.nome||"Cliente",telefone:l.telefone||"",email:l.email||"",lead:l,imovel:imovelNome(l.imovelId),origem:"Lead convertido",valor:Number(l.orcamento)||0});
   });
@@ -3024,9 +3144,9 @@ function vClientesJM(){
     byKey.set(key,{nome:v.cliente||old.nome||"Cliente",telefone:lead?.telefone||old.telefone||"",email:lead?.email||old.email||"",lead:lead||old.lead||null,imovel:imovelNome(v.imovelId)||old.imovel||"Imóvel não informado",origem:"Venda registrada",valor:Number(v.valor)||old.valor||0,data:v.data||""});
   });
   const clients=[...byKey.values()].sort((a,b)=>a.nome.localeCompare(b.nome,"pt-BR"));
-  let h=jmModuleHead("Clientes","Compradores com venda registrada ou lead convertido. Cada pessoa aparece uma única vez.",'<button type="button" class="btn primary" data-jm-go="leads">Ver leads</button>');
+  let h=jmModuleHead("Clientes","Compradores com venda registrada ou lead convertido. Cada pessoa aparece uma única vez.",'<button type="button" class="btn primary" data-jm-new-client>+ Novo cliente</button><button type="button" class="btn" data-jm-go="leads">Ver leads</button>');
   h+='<div class="kpis">'+kpi("var(--accent)","users","Clientes na carteira",clients.length,"Contatos únicos")+kpi("var(--green)","check","Vendas registradas",state.vendas.length,"Negócios concluídos")+kpi("var(--teal)","money","Volume vendido",brl0(state.vendas.reduce((a,v)=>a+(Number(v.valor)||0),0)),"Valor total das vendas")+'</div>';
-  if(!clients.length)return h+'<div class="empty" style="margin-top:14px"><b>Nenhum cliente convertido ainda</b>Quando um lead for marcado como venda fechada ou uma venda for registrada, o cliente aparecerá aqui sem duplicar a lista de leads.</div>';
+  if(!clients.length)return h+'<div class="empty" style="margin-top:14px"><b>Nenhum cliente cadastrado ainda</b>Cadastre seu primeiro cliente para começar a organizar sua carteira.<br><button type="button" class="btn primary" data-jm-new-client>+ Adicionar primeiro cliente</button></div>';
   h+='<div class="jm-module-grid" style="margin-top:14px">'+clients.map(c=>{
     const initials=String(c.nome||"C").trim().split(/\s+/).slice(0,2).map(x=>x[0]||"").join("").toUpperCase();
     return '<article class="jm-entity"><div class="jm-entity-top"><div class="jm-avatar">'+esc(initials)+'</div><div style="min-width:0;flex:1"><h3>'+esc(c.nome)+'</h3><p>'+esc(c.telefone||c.email||"Contato sem telefone cadastrado")+'</p></div><span class="chip stage" data-etapa="fechado">Cliente</span></div><div class="jm-entity-meta"><span>'+esc(c.imovel||"Imóvel não informado")+'</span><span>'+esc(c.origem)+'</span></div><div class="jm-entity-foot"><div><small class="sub">Valor do negócio</small><div style="font-weight:850;color:var(--accent)">'+(c.valor?brl0(c.valor):"—")+'</div></div>'+(c.lead?'<button class="btn sm" type="button" data-open-lead="'+esc(c.lead.id)+'">Abrir cadastro</button>':'<span class="sub">'+(c.data?fmtData(c.data):"")+'</span>')+'</div></article>';
@@ -3038,13 +3158,14 @@ function vAgendaJM(){
   state.leads.forEach(l=>{
     if(l.visita){const raw=String(l.visita);items.push({lead:l,type:"Visita",date:raw.slice(0,10),time:raw.length>10?raw.slice(11,16):"09:00",detail:imovelNome(l.imovelId)||"Imóvel a definir",key:"visita"});}
     if(l.proximoContato && !(l.visita&&String(l.visita).slice(0,10)===String(l.proximoContato).slice(0,10))){items.push({lead:l,type:"Follow-up",date:String(l.proximoContato).slice(0,10),time:"—",detail:"Retorno de atendimento",key:"followup"});}
+    (Array.isArray(l.compromissos)?l.compromissos:[]).forEach(c=>{if(c&&!c.concluido&&c.data)items.push({lead:l,type:c.titulo||"Compromisso",date:c.data,time:c.hora||"—",detail:c.detalhe||"Compromisso cadastrado",key:"custom",compromissoId:c.id})});
   });
   items.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
   const filtered=items.filter(x=>jmAgendaFilter==="all"|| (jmAgendaFilter==="today"?x.date===today:(x.date>=today&&x.date<=end)));
-  const actions='<button type="button" class="btn sm" data-agenda-filter="today">Hoje</button><button type="button" class="btn sm" data-agenda-filter="week">Próximos 7 dias</button><button type="button" class="btn sm" data-agenda-filter="all">Todos</button>';
+  const actions='<button type="button" class="btn primary" data-jm-new-appointment>+ Novo compromisso</button><button type="button" class="btn sm" data-agenda-filter="today">Hoje</button><button type="button" class="btn sm" data-agenda-filter="week">Próximos 7 dias</button><button type="button" class="btn sm" data-agenda-filter="all">Todos</button>';
   let h=jmModuleHead("Agenda","Visitas e retornos organizados a partir dos compromissos registrados nos leads.",actions);
   h+='<div class="kpis">'+kpi("var(--accent)","target","Compromissos",filtered.length,"No filtro selecionado")+kpi("var(--green)","check","Visitas",filtered.filter(x=>x.key==="visita").length,"Agendamentos de visita")+kpi("var(--teal)","star","Follow-ups",filtered.filter(x=>x.key==="followup").length,"Retornos programados")+'</div>';
-  if(!filtered.length)return h+'<div class="empty" style="margin-top:14px"><b>Nenhum compromisso neste período</b>Agende uma visita ou defina o próximo contato dentro do cadastro de um lead. Os compromissos aparecerão aqui automaticamente.</div>';
+  if(!filtered.length)return h+'<div class="empty" style="margin-top:14px"><b>Nenhum compromisso neste período</b>Adicione um compromisso para organizar visitas, reuniões e retornos.<br><button type="button" class="btn primary" data-jm-new-appointment>+ Adicionar compromisso</button></div>';
   h+='<div class="panel" style="margin-top:14px"><h3 class="jm-section-title">Compromissos</h3><div class="jm-agenda-list">'+filtered.map(x=>'<div class="jm-agenda-row"><div><div class="jm-agenda-time">'+esc(x.time)+'</div><small class="sub">'+esc(fmtData(x.date))+'</small></div><div style="min-width:0"><h3>'+esc(x.type)+' · '+esc(x.lead.nome||"Lead")+'</h3><p>'+esc(x.detail)+' · '+esc(x.lead.telefone||"Sem telefone")+'</p></div><button type="button" class="btn sm" data-open-lead="'+esc(x.lead.id)+'">Abrir lead</button></div>').join("")+'</div></div>';
   return h;
 }
@@ -3065,6 +3186,27 @@ function vRelatoriosJM(){
   return h;
 }
 
+/* ---------- Cadastro rápido de compromisso na Agenda ---------- */
+function jmNovoCompromisso(){
+  const leads=state.leads.filter(l=>l.etapa!=="perdido").slice().sort((a,b)=>String(a.nome||"").localeCompare(String(b.nome||""),"pt-BR"));
+  if(!leads.length){toast("Cadastre um cliente antes de criar um compromisso.");abrirLead();return}
+  const options=leads.map(l=>[l.id,l.nome||"Cliente"]).map(([v,t])=>'<option value="'+esc(v)+'">'+esc(t)+'</option>').join("");
+  const corpo='<div class="pane">'+
+    '<div class="f full"><label for="jmCompLead">Cliente</label><select id="jmCompLead" required>'+options+'</select></div>'+
+    '<div class="f"><label for="jmCompTitle">Tipo de compromisso</label><select id="jmCompTitle"><option>Visita</option><option>Reunião</option><option>Ligação</option><option>Retorno</option><option>Assinatura</option><option>Outro</option></select></div>'+
+    '<div class="f"><label for="jmCompDate">Data</label><input id="jmCompDate" type="date" required value="'+hoje()+'"></div>'+
+    '<div class="f"><label for="jmCompTime">Horário</label><input id="jmCompTime" type="time" value="09:00"></div>'+
+    '<div class="f full"><label for="jmCompDetail">Detalhes</label><textarea id="jmCompDetail" placeholder="Endereço, imóvel, observações..."></textarea></div>'+
+    '</div>';
+  abrirDialogo({titulo:"Novo compromisso",corpo,salvarTxt:"Salvar compromisso",onSave:async()=>{
+    const lead=state.leads.find(l=>String(l.id)===$("#jmCompLead").value);
+    const data=$("#jmCompDate").value;
+    if(!lead||!data){toast("Selecione o cliente e a data.");return false}
+    const compromisso={id:"cmp-"+uid(),titulo:$("#jmCompTitle").value||"Compromisso",data,hora:$("#jmCompTime").value||"",detalhe:$("#jmCompDetail").value.trim(),concluido:false,criadoEm:new Date().toISOString()};
+    const rec=Object.assign({},lead,{compromissos:[...(Array.isArray(lead.compromissos)?lead.compromissos:[]),compromisso],alteradoPor:eu()});
+    await salvar("leads",rec);toast("Compromisso adicionado à Agenda.");
+  }});
+}
 /* ---------- Render ---------- */
 const dlg=$("#dlg"), form=$("#dlgForm");
 function render(){
@@ -3742,6 +3884,8 @@ function bindDashboardChartInteractions(){
 /* ---------- Eventos ---------- */
 function bindView(){
   const app=$("#app");
+  app.querySelectorAll("[data-jm-new-client]").forEach(b=>b.onclick=()=>abrirLead(null,"resumo",true));
+  app.querySelectorAll("[data-jm-new-appointment]").forEach(b=>b.onclick=()=>jmNovoCompromisso());
   app.querySelectorAll("[data-agenda-filter]").forEach(b=>b.onclick=()=>{jmAgendaFilter=b.dataset.agendaFilter||"week";render()});
   app.querySelectorAll("[data-periodo]").forEach(b=>b.onclick=()=>{
     periodo=b.dataset.periodo;
@@ -4090,9 +4234,9 @@ function abrirDialogo({titulo,abas,corpo,onSave,onDelete,salvarTxt,aba}){
 dlg.addEventListener("close",()=>render());
 
 /* ---------- Lead ---------- */
-function abrirLead(id,aba){
+function abrirLead(id,aba,novoCliente=false){
   const l=id?state.leads.find(x=>x.id===id):null;
-  const d=l?JSON.parse(JSON.stringify(l)):{temperatura:"morno",etapa:"novo",origem:"Meta Ads",entrada:hoje(),imovelId:"",notas:[]};
+  const d=l?JSON.parse(JSON.stringify(l)):{temperatura:"morno",etapa:"novo",cadastroManualCliente:!!novoCliente,origem:novoCliente?"Cadastro manual":"Meta Ads",entrada:hoje(),imovelId:"",notas:[]};
   let temp=d.temperatura||"morno"; let notas=Array.isArray(d.notas)?d.notas.slice():[];
   const sc=pontuacao(d), nv=nivel(sc), cor=sc>=70?"var(--green)":sc>=40?"var(--accent)":"var(--slate)";
   const abas=[["resumo","Resumo"],["perfil","Perfil"],["interesse","Interesse"],["decisao","Decisão"],["esfriou","Esfriou"],["historico","Histórico ("+notas.length+")"]].concat(l?[["script","Script e follow-up"]]:[]);
@@ -6798,5 +6942,187 @@ html[data-theme="light"] #jmMobileDrawer nav.tabs .jm-nav-label{color:#75664f!im
 })();
 </script>
 
+<style id="jm-estudio-root-grid-final-fix">
+/*
+  Correção definitiva do Estúdio IA:
+  .estudio-page contém dois blocos irmãos (cabeçalho e layout).
+  O cabeçalho deve ocupar uma linha inteira; só .estudio-layout
+  deve organizar a conversa e o painel lateral em colunas.
+*/
+#app .estudio-page{
+  display:block!important;
+  grid-template-columns:none!important;
+  grid-template-rows:none!important;
+  grid-auto-flow:row!important;
+  width:100%!important;
+  max-width:1600px!important;
+  min-width:0!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+#app .estudio-page>.estudio-head{
+  display:flex!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:2px 0 18px!important;
+}
+#app .estudio-page>.estudio-layout{
+  display:grid!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  grid-template-columns:minmax(0,1fr) 310px!important;
+  grid-template-rows:auto!important;
+  align-items:stretch!important;
+  gap:14px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+#app .estudio-layout>.estudio-main{
+  display:flex!important;
+  flex-direction:column!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:68vh!important;
+  height:auto!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:hidden!important;
+}
+#app .estudio-main>.estudio-thread-toolbar,
+#app .estudio-main>#estudioThread,
+#app .estudio-main>.estudio-compose,
+#app .estudio-main>.estudio-working{
+  position:relative!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+#app .estudio-main>#estudioThread{
+  display:flex!important;
+  flex:1 1 auto!important;
+  flex-direction:column!important;
+  min-width:0!important;
+  min-height:360px!important;
+  max-height:calc(100dvh - 390px)!important;
+  overflow-y:auto!important;
+}
+#app .estudio-main>.estudio-compose{
+  display:block!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  padding:12px 15px 14px!important;
+  visibility:visible!important;
+  opacity:1!important;
+  overflow:visible!important;
+  border-top:1px solid var(--jm-glass-border,var(--line))!important;
+}
+#app .estudio-compose>.estudio-quick-actions{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  gap:8px!important;
+  width:100%!important;
+  min-width:0!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+#app .estudio-compose>.estudio-composer-shell{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+#app .estudio-composer-shell>.estudio-composer-row{
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:flex-end!important;
+  gap:9px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#app .estudio-composer-row>#estudioPrompt{
+  display:block!important;
+  flex:1 1 auto!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:44px!important;
+  max-height:160px!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+#app .estudio-composer-row>#estudioAddFile,
+#app .estudio-composer-row>#estudioSend{
+  display:grid!important;
+  flex:0 0 42px!important;
+  width:42px!important;
+  height:42px!important;
+  min-width:42px!important;
+  min-height:42px!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+#app .estudio-compose>#estudioFiles{
+  display:none!important;
+}
+#app .estudio-layout>.estudio-side{
+  display:flex!important;
+  flex-direction:column!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+@media(max-width:1050px) and (min-width:821px){
+  #app .estudio-page>.estudio-layout{
+    grid-template-columns:minmax(0,1fr) 270px!important;
+  }
+}
+@media(max-width:820px){
+  #app .estudio-page>.estudio-layout{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  #app .estudio-layout>.estudio-main{
+    min-height:68vh!important;
+  }
+  #app .estudio-main>#estudioThread{
+    min-height:270px!important;
+    max-height:52vh!important;
+  }
+  #app .estudio-layout>.estudio-side{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:560px){
+  #app .estudio-page>.estudio-layout{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  #app .estudio-layout>.estudio-side{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  #app .estudio-main>.estudio-compose{
+    padding:9px!important;
+  }
+  #app .estudio-compose>.estudio-quick-actions{
+    flex-wrap:nowrap!important;
+    overflow-x:auto!important;
+    padding-bottom:5px!important;
+  }
+  #app .estudio-compose>.estudio-quick-actions>.btn{
+    flex:0 0 auto!important;
+  }
+}
+</style>
 </body>
 </html>
